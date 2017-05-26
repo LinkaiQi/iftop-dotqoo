@@ -51,4 +51,9 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# New add
+*.log
+iftop
+
+
 
