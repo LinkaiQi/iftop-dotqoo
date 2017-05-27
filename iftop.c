@@ -54,6 +54,7 @@
 #include "addrs_ioctl.h"
 
 #include "communication_info_server.h"
+#include "read_target_ip.h"
 
 #include <netinet/ip6.h>
 //------------------------------------------------------------------------------
@@ -1034,6 +1035,11 @@ void packet_loop(void* ptr) {
 /* main:
  * Entry point. See usage(). */
 int main(int argc, char **argv) {
+
+    read_ip_from_file();
+    free_addr_list();
+
+
     pthread_t thread;
     struct sigaction sa = {};
 
@@ -1051,7 +1057,7 @@ int main(int argc, char **argv) {
     options_make();
 
     sa.sa_handler = finish;
-    sigaction(SIGINT, &sa, NULL); 		//�����źţ�
+    sigaction(SIGINT, &sa, NULL);
 
     pthread_mutex_init(&tick_mutex, NULL);
 
@@ -1063,7 +1069,7 @@ int main(int argc, char **argv) {
       //tui_init();
     }
     else {
-      ui_init();					//�ᴴ������hash_table
+      ui_init();
     }
 
 	//

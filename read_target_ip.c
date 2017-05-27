@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <arpa/inet.h>
 
 #include "read_target_ip.h"
 
@@ -35,10 +36,11 @@ int read_ip_from_file() {
 
         n_addr = n_addr + 1;
     }
-
+    fclose(fp);
     return 0;
 }
 
+//inet_aton("10.0.0.1", &antelope.sin_addr); // store IP in antelope
 
 void free_addr_list() {
     for (int i = 0; i < n_addr; i++) {

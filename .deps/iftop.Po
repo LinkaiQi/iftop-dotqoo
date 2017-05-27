@@ -161,7 +161,7 @@ iftop.o: iftop.c integers.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include/arpa/inet.h \
   sorted_list.h options.h ui.h tui.h sll.h threadprof.h ether.h ip.h \
   tcp.h token.h llc.h extract.h ethertype.h cfgfile.h ppp.h \
-  addrs_ioctl.h communication_info_server.h iftop_api.h \
+  addrs_ioctl.h communication_info_server.h iftop_api.h read_target_ip.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include/netinet/ip6.h
 
 integers.h:
@@ -527,5 +527,7 @@ addrs_ioctl.h:
 communication_info_server.h:
 
 iftop_api.h:
+
+read_target_ip.h:
 
 /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include/netinet/ip6.h:
