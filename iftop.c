@@ -109,8 +109,8 @@ static void finish(int sig) {
 #define CAPTURE_LENGTH 256
 
 void init_history() {
-    history = addr_hash_create(); 			//����hash��?!
-    last_timestamp = time(NULL); 			//��ȡʱ��
+    history = addr_hash_create();
+    last_timestamp = time(NULL);
     memset(&history_totals, 0, sizeof history_totals);
 }
 
@@ -119,7 +119,7 @@ history_type* history_create() {
     h = xcalloc(1, sizeof *h);
     //--------------------------------------------------------------------------
     h->create_time = time(NULL);
-    h->last_update_time = h->create_time;
+    //h->last_update_time = h->create_time;
     //--------------------------------------------------------------------------
     return h;
 }
@@ -153,7 +153,7 @@ void history_rotate() {
 	time_t t = time(NULL); 			//isshe
 
     hash_node_type* n = NULL;
-    history_pos = (history_pos + 1) % HISTORY_LENGTH;
+    //history_pos = (history_pos + 1) % HISTORY_LENGTH;
     hash_next_item(history, &n);
 
     while(n != NULL) {
@@ -176,6 +176,7 @@ void history_rotate() {
             hash_delete(history, &key);
             free(d);
         }
+        /*
         else {
             if (d->last_write == history_pos && !options.history_delete_interval && !options.threshold) {
                 printf("NO specification!!!!\n");
@@ -189,6 +190,8 @@ void history_rotate() {
                 d->sent[history_pos] = 0;
             }
         }
+        */
+
         /*
         if (
             (t - history_delete_last >= options.history_delete_interval) &&
@@ -220,12 +223,12 @@ void history_rotate() {
         n = next;
     }
 
-    history_totals.sent[history_pos] = 0;
-    history_totals.recv[history_pos] = 0;
+    //history_totals.sent[history_pos] = 0;
+    //history_totals.recv[history_pos] = 0;
 
-    if(history_len < HISTORY_LENGTH) {
-        history_len++;
-    }
+    //if(history_len < HISTORY_LENGTH) {
+    //    history_len++;
+    //}
 
 	//isshe
 	if (t - history_delete_last > options.history_delete_interval)
@@ -256,10 +259,13 @@ void tick(int print) {
 
     t = time(NULL);
     if(t - last_timestamp >= RESOLUTION) {
-        analyse_data();
+        //-----------------------------------
+        //analyse_data();
+        print_all_history();
+        //------------------------------------
         if (options.no_curses) {
           if (!options.timed_output || (options.timed_output && t - first_timestamp >= options.timed_output)) {
-            tui_print();
+            //tui_print();
             if (options.timed_output) {
               finish(SIGINT);
             }
@@ -623,7 +629,7 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
 	    }
 
 	    /* Update record */
-	    ht->last_write = history_pos;
+	    //ht->last_write = history_pos;
         //----------------------------------------------------------------------
         ht->last_update_time = time(NULL);
         //printf("we have updated the record!\n");
@@ -631,11 +637,11 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
 	    if( ((IP_V(iptr) == 4) && (iptr->ip_src.s_addr == ap.src.s_addr))
 	       || ((IP_V(iptr) == 6) && !memcmp(&ip6tr->ip6_src, &ap.src6, sizeof(ap.src6))) )
 	    {
-	        ht->sent[history_pos] += len;
+	        //ht->sent[history_pos] += len;
 	        ht->total_sent += len;
 	    }
 	    else {
-	        ht->recv[history_pos] += len;
+	        //ht->recv[history_pos] += len;
 	        ht->total_recv += len;
 	    }
 	}
@@ -647,15 +653,13 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
 
     if(direction == 0) {
         /* incoming */
-        history_totals.recv[history_pos] += len; 	//�������һֱ���ǼӵĻ����վ��������ע�⿴�����ط��Ĵ���
+        //history_totals.recv[history_pos] += len;
         history_totals.total_recv += len;
     }
     else {
-        history_totals.sent[history_pos] += len;
+        //history_totals.sent[history_pos] += len;
         history_totals.total_sent += len;
     }
-    //������Ϊֹ�����ú���src_ip, dst_ip, port, dns����������/���ͳ��ȵȣ�����Ӧ�ûᵽUI���ﴦ��
-    //һ�δ���������ͽ����ˣ�ʣ��Ķ����������̵߳�ui_loop�д���(���).
 }
 
 static void handle_raw_packet(unsigned char* args, const struct pcap_pkthdr* pkthdr, const unsigned char* packet)
@@ -1056,7 +1060,7 @@ int main(int argc, char **argv) {
     init_history();
 
     if (options.no_curses) {
-      tui_init();
+      //tui_init();
     }
     else {
       ui_init();					//�ᴴ������hash_table

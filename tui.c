@@ -184,7 +184,7 @@ void tui_init() {
  */
 void tui_tick(int print) {
   if (print) {
-    tui_print();
+    //tui_print();
   }
 }
 

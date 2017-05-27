@@ -173,6 +173,7 @@ void screen_list_clear() {
 /*
  * Calculate peaks and totals
  */
+/*
 void calculate_totals() {
     int i;
 
@@ -203,6 +204,7 @@ void calculate_totals() {
       totals.sent[i] /= t;
     }
 }
+*/
 
 void make_screen_list() {
     hash_node_type* n = NULL;
@@ -238,29 +240,9 @@ void screen_hash_clear() {
     }
 }
 
-
-void analyse_data() {
-
-    printf("call analyse_data\n"); // ------------------------------------------
-
+/* print all history record in the history hash table */
+void print_all_history() {
     hash_node_type* n = NULL;
-
-    if(options.paused == 1) {
-      return;
-    }
-
-    // Zero totals
-    memset(&totals, 0, sizeof totals);
-
-    if(options.freezeorder) {
-      screen_hash_clear();
-    }
-    else {
-      screen_list_clear();
-      hash_delete_all(screen_hash);
-    }
-
-    //--------------------------------------------------------------------------
     int counter = 0;
     while(hash_next_item(history, &n) == HASH_STATUS_OK) {
         counter = counter + 1;
@@ -313,9 +295,27 @@ void analyse_data() {
 
     }
     printf("counter = %d\n", counter);
+    printf("---------------------------------------------------------\n");
+}
 
-    n = NULL;
-    //--------------------------------------------------------------------------
+
+void analyse_data() {
+    hash_node_type* n = NULL;
+
+    if(options.paused == 1) {
+      return;
+    }
+
+    // Zero totals
+    memset(&totals, 0, sizeof totals);
+
+    if(options.freezeorder) {
+      screen_hash_clear();
+    }
+    else {
+      screen_list_clear();
+      hash_delete_all(screen_hash);
+    }
 
     while(hash_next_item(history, &n) == HASH_STATUS_OK) {
         history_type* d = (history_type*)n->rec;
@@ -367,17 +367,17 @@ void analyse_data() {
 
             for(j = 0; j < HISTORY_DIVISIONS; j++) {
                 if(i < history_divs[j]) {
-                    screen_line->recv[j] += d->recv[ii];
-                    screen_line->sent[j] += d->sent[ii];
+                    //screen_line->recv[j] += d->recv[ii];
+                    //screen_line->sent[j] += d->sent[ii];
                 }
             }
         }
 
     }
 
-    make_screen_list();
+    //make_screen_list();
 
-    calculate_totals();
+    //calculate_totals();
 
 }
 

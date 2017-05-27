@@ -42,8 +42,8 @@
 #endif	/* !defined s6_addr32 */
 
 typedef struct {
-    long recv[HISTORY_LENGTH];
-    long sent[HISTORY_LENGTH];
+    //long recv[HISTORY_LENGTH];
+    //long sent[HISTORY_LENGTH];
     double long total_sent;
     double long total_recv;
 	//--------------------------------------------------------------------------
@@ -51,7 +51,7 @@ typedef struct {
 	time_t create_time;
 	time_t last_update_time;
 	//--------------------------------------------------------------------------
-    int last_write;
+    //int last_write;
 } history_type;
 
 void tick(int print);

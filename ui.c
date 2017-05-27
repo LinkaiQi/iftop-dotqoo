@@ -59,8 +59,8 @@
 
 
 extern hash_type* history;
-extern int history_pos;
-extern int history_len;
+//extern int history_pos;
+//extern int history_len;
 
 extern options_t options ;
 
