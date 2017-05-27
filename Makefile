@@ -89,17 +89,17 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = x86_64-apple-darwin16.5.0
-host_triplet = x86_64-apple-darwin16.5.0
-target_triplet = x86_64-apple-darwin16.5.0
+build_triplet = x86_64-apple-darwin16.6.0
+host_triplet = x86_64-apple-darwin16.6.0
+target_triplet = x86_64-apple-darwin16.6.0
 sbin_PROGRAMS = iftop$(EXEEXT)
 subdir = .
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/config.h.in $(top_srcdir)/config/mkinstalldirs \
 	$(top_srcdir)/config/depcomp $(noinst_HEADERS) AUTHORS COPYING \
-	ChangeLog INSTALL NEWS README TODO \
-	$(top_srcdir)/config/compile $(top_srcdir)/config/config.guess \
+	ChangeLog INSTALL NEWS README $(top_srcdir)/config/compile \
+	$(top_srcdir)/config/config.guess \
 	$(top_srcdir)/config/config.sub \
 	$(top_srcdir)/config/install-sh $(top_srcdir)/config/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -121,8 +121,8 @@ am_iftop_OBJECTS = addr_hash.$(OBJEXT) edline.$(OBJEXT) hash.$(OBJEXT) \
 	ui.$(OBJEXT) tui.$(OBJEXT) util.$(OBJEXT) \
 	addrs_ioctl.$(OBJEXT) addrs_dlpi.$(OBJEXT) dlcommon.$(OBJEXT) \
 	stringmap.$(OBJEXT) cfgfile.$(OBJEXT) vector.$(OBJEXT) \
-	iftop_api.$(OBJEXT) communication_info_server.$(OBJEXT)
-
+	iftop_api.$(OBJEXT) communication_info_server.$(OBJEXT) \
+	read_target_ip.$(OBJEXT)
 iftop_OBJECTS = $(am_iftop_OBJECTS)
 iftop_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_$(V))
@@ -274,9 +274,9 @@ distcleancheck_listfiles = find . -type f -print
 ACLOCAL = aclocal -I config
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
-AUTOCONF = ${SHELL} /Users/linkai/Downloads/iftop-1.0pre4_add_common_line_options_v1.0.2/config/missing autoconf
-AUTOHEADER = ${SHELL} /Users/linkai/Downloads/iftop-1.0pre4_add_common_line_options_v1.0.2/config/missing autoheader
-AUTOMAKE = ${SHELL} /Users/linkai/Downloads/iftop-1.0pre4_add_common_line_options_v1.0.2/config/missing automake-1.14
+AUTOCONF = ${SHELL} /Users/linkai/Documents/modified-iftop-dotqoo/config/missing autoconf
+AUTOHEADER = ${SHELL} /Users/linkai/Documents/modified-iftop-dotqoo/config/missing autoheader
+AUTOMAKE = ${SHELL} /Users/linkai/Documents/modified-iftop-dotqoo/config/missing automake-1.14
 AWK = awk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -301,7 +301,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = -lpcap  -lcurses 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /Users/linkai/Downloads/iftop-1.0pre4_add_common_line_options_v1.0.2/config/missing makeinfo
+MAKEINFO = ${SHELL} /Users/linkai/Documents/modified-iftop-dotqoo/config/missing makeinfo
 MKDIR_P = config/install-sh -c -d
 OBJEXT = o
 PACKAGE = iftop
@@ -316,10 +316,10 @@ SET_MAKE =
 SHELL = /bin/sh
 STRIP = 
 VERSION = 1.0pre4
-abs_builddir = /Users/linkai/Downloads/iftop-1.0pre4_add_common_line_options_v1.0.2
-abs_srcdir = /Users/linkai/Downloads/iftop-1.0pre4_add_common_line_options_v1.0.2
-abs_top_builddir = /Users/linkai/Downloads/iftop-1.0pre4_add_common_line_options_v1.0.2
-abs_top_srcdir = /Users/linkai/Downloads/iftop-1.0pre4_add_common_line_options_v1.0.2
+abs_builddir = /Users/linkai/Documents/modified-iftop-dotqoo
+abs_srcdir = /Users/linkai/Documents/modified-iftop-dotqoo
+abs_top_builddir = /Users/linkai/Documents/modified-iftop-dotqoo
+abs_top_srcdir = /Users/linkai/Documents/modified-iftop-dotqoo
 ac_aux_dir = config
 ac_ct_CC = gcc
 am__include = include
@@ -328,10 +328,10 @@ am__quote =
 am__tar = $${TAR-tar} chof - "$$tardir"
 am__untar = $${TAR-tar} xf -
 bindir = ${exec_prefix}/bin
-build = x86_64-apple-darwin16.5.0
+build = x86_64-apple-darwin16.6.0
 build_alias = 
 build_cpu = x86_64
-build_os = darwin16.5.0
+build_os = darwin16.6.0
 build_vendor = apple
 builddir = .
 datadir = ${datarootdir}
@@ -339,15 +339,15 @@ datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host = x86_64-apple-darwin16.5.0
+host = x86_64-apple-darwin16.6.0
 host_alias = 
 host_cpu = x86_64
-host_os = darwin16.5.0
+host_os = darwin16.6.0
 host_vendor = apple
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /Users/linkai/Downloads/iftop-1.0pre4_add_common_line_options_v1.0.2/config/install-sh
+install_sh = ${SHELL} /Users/linkai/Documents/modified-iftop-dotqoo/config/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -363,10 +363,10 @@ sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 srcdir = .
 sysconfdir = ${prefix}/etc
-target = x86_64-apple-darwin16.5.0
+target = x86_64-apple-darwin16.6.0
 target_alias = 
 target_cpu = x86_64
-target_os = darwin16.5.0
+target_os = darwin16.6.0
 target_vendor = apple
 top_build_prefix = 
 top_builddir = .
@@ -376,24 +376,27 @@ iftop_SOURCES = addr_hash.c edline.c hash.c iftop.c ns_hash.c \
                  options.c resolver.c screenfilter.c serv_hash.c \
                  sorted_list.c threadprof.c ui_common.c ui.c tui.c util.c \
                  addrs_ioctl.c addrs_dlpi.c dlcommon.c \
-                 stringmap.c cfgfile.c vector.c iftop_api.c communication_info_server.c
+                 stringmap.c cfgfile.c vector.c \
+                 iftop_api.c communication_info_server.c \
+                 read_target_ip.c
 
 
 #iftop_dump_SOURCES = counter_hash.c hash.c iftop-dump.c  \
 #                 options.c \
 #                 util.c \
 #		 addrs_ioctl.c addrs_dlpi.c dlcommon.c \
-#		 stringmap.c cfgfile.c 
-noinst_HEADERS = addr_hash.h addrs_ioctl.h ether.h ethertype.h extract.h hash.h iftop.h \
+#		 stringmap.c cfgfile.c
+noinst_HEADERS = addr_hash.h ether.h ethertype.h extract.h hash.h iftop.h \
                  integers.h ip.h llc.h ns_hash.h options.h resolver.h \
                  screenfilter.h serv_hash.h sll.h sorted_list.h tcp.h \
                  threadprof.h token.h ui_common.h ui.h tui.h dlcommon.h stringmap.h \
-                 vector.h cfgfile.h ppp.h iftop_api.h communication_info_server.h
+                 vector.h cfgfile.h ppp.h iftop_api.h communication_info_server.h \
+                 read_target_ip.h
 
 man_MANS = iftop.8
 SUBDIRS = config
 EXTRA_DIST = bootstrap README ChangeLog AUTHORS COPYING INSTALL TODO \
-		$(man_MANS) iftop.cat iftop.spec
+		Makefile.OLD $(man_MANS) iftop.cat iftop.spec
 
 MAINTERCLEANFILES = Makefile.in aclocal.m4 configure configuration.h.in \
                     stamp-h.in iftop.spec
@@ -509,12 +512,15 @@ include ./$(DEPDIR)/addr_hash.Po
 include ./$(DEPDIR)/addrs_dlpi.Po
 include ./$(DEPDIR)/addrs_ioctl.Po
 include ./$(DEPDIR)/cfgfile.Po
+include ./$(DEPDIR)/communication_info_server.Po
 include ./$(DEPDIR)/dlcommon.Po
 include ./$(DEPDIR)/edline.Po
 include ./$(DEPDIR)/hash.Po
 include ./$(DEPDIR)/iftop.Po
+include ./$(DEPDIR)/iftop_api.Po
 include ./$(DEPDIR)/ns_hash.Po
 include ./$(DEPDIR)/options.Po
+include ./$(DEPDIR)/read_target_ip.Po
 include ./$(DEPDIR)/resolver.Po
 include ./$(DEPDIR)/screenfilter.Po
 include ./$(DEPDIR)/serv_hash.Po
@@ -526,8 +532,6 @@ include ./$(DEPDIR)/ui.Po
 include ./$(DEPDIR)/ui_common.Po
 include ./$(DEPDIR)/util.Po
 include ./$(DEPDIR)/vector.Po
-include ./$(DEPDIR)/iftop_api.Po
-include ./$(DEPDIR)/communication_info_server.Po
 
 .c.o:
 	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -1016,7 +1020,7 @@ uninstall-man: uninstall-man8
 iftop.cat: iftop.8
 	(echo -e ".pl 1100i" ; cat iftop.8 ; echo ".pl \n(nlu+10") | groff -Tascii -man > iftop.cat
 
-iftop.spec: iftop.spec.in configure.ac
+iftop.spec: iftop.spec.in configure.in
 	sed 's/__VERSION__/$(PACKAGE_VERSION)/' < iftop.spec.in > iftop.spec
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

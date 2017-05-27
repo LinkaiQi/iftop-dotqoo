@@ -10,7 +10,7 @@
 # $Id: Makefile.am,v 1.13 2014/01/19 20:11:39 pdw Exp $
 #
 
-sbin_PROGRAMS = iftop 
+sbin_PROGRAMS = iftop
 #iftop-dump
 
 iftop_SOURCES = addr_hash.c edline.c hash.c iftop.c ns_hash.c \
@@ -18,13 +18,14 @@ iftop_SOURCES = addr_hash.c edline.c hash.c iftop.c ns_hash.c \
                  sorted_list.c threadprof.c ui_common.c ui.c tui.c util.c \
                  addrs_ioctl.c addrs_dlpi.c dlcommon.c \
                  stringmap.c cfgfile.c vector.c \
-                 iftop_api.c communication_info_server.c
+                 iftop_api.c communication_info_server.c \
+                 read_target_ip.c
 
 #iftop_dump_SOURCES = counter_hash.c hash.c iftop-dump.c  \
 #                 options.c \
 #                 util.c \
 #		 addrs_ioctl.c addrs_dlpi.c dlcommon.c \
-#		 stringmap.c cfgfile.c 
+#		 stringmap.c cfgfile.c
 
 
 
@@ -32,7 +33,8 @@ noinst_HEADERS = addr_hash.h ether.h ethertype.h extract.h hash.h iftop.h \
                  integers.h ip.h llc.h ns_hash.h options.h resolver.h \
                  screenfilter.h serv_hash.h sll.h sorted_list.h tcp.h \
                  threadprof.h token.h ui_common.h ui.h tui.h dlcommon.h stringmap.h \
-                 vector.h cfgfile.h ppp.h iftop_api.h communication_info_server.h
+                 vector.h cfgfile.h ppp.h iftop_api.h communication_info_server.h \
+                 read_target_ip.h
 
 man_MANS = iftop.8
 
@@ -48,9 +50,8 @@ iftop.spec: iftop.spec.in configure.in
 
 EXTRA_DIST = bootstrap README ChangeLog AUTHORS COPYING INSTALL TODO \
 		Makefile.OLD $(man_MANS) iftop.cat iftop.spec
-             
+
 MAINTERCLEANFILES = Makefile.in aclocal.m4 configure configuration.h.in \
                     stamp-h.in iftop.spec
 
 ACLOCAL = aclocal -I @ac_aux_dir@
-
