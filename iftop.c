@@ -310,35 +310,7 @@ void assign_addr_pair(addr_pair* ap, struct ip* iptr, int flip) { 		//flip:��
 
   if(IP_V(iptr) == 4) {
     ap->af = AF_INET;
-  //----------------------------------------------------------------------------
-  ap->trans_protocol = iptr->ip_p;
 
-  /*
-  switch(iptr->ip_p){
-    case IPPROTO_ICMP:
-      ap->trans_protocol = PROTOCOL_ICMP;
-      break;
-    case IPPROTO_IGMP:
-      ap->trans_protocol = PROTOCOL_IGMP;
-      break;
-    case IPPROTO_TCP:
-      ap->trans_protocol = PROTOCOL_TCP;
-      break;
-    case IPPROTO_UDP:
-      ap->trans_protocol = PROTOCOL_UDP;
-      break;
-    case IPPROTO_RAW:
-      ap->trans_protocol = PROTOCOL_RAW;
-      break;
-    default:
-      ap->trans_protocol = PROTOCOL_OTHER;
-      break;
-  }
-  */
-  if (iptr->ip_p == 1) {
-      printf("find ICMP packet\n");
-  }
-  //----------------------------------------------------------------------------
   /* Does this protocol use ports? */
   if(iptr->ip_p == IPPROTO_TCP || iptr->ip_p == IPPROTO_UDP) {
     /* We take a slight liberty here by treating UDP the same as TCP */
@@ -390,6 +362,31 @@ void assign_addr_pair(addr_pair* ap, struct ip* iptr, int flip) { 		//flip:��
   }
 }
 
+
+/* isshe 2017.05.27
+ * if the control block filter is on, test on the packet whether in the
+ * control block ip address address
+ */
+int is_control_block_pkt(struct ip* iptr) {
+    // filter 224.0.0/24 224.0.1/24
+    if ((iptr->ip_src.s_addr & 0xFFFF) == 0xE0 && !(iptr->ip_src.s_addr & 0xFE0000)) {
+        return 1;
+    }
+    if ((iptr->ip_dst.s_addr & 0xFFFF) == 0xE0 && !(iptr->ip_dst.s_addr & 0xFE0000)) {
+        return 1;
+    }
+    // filter 255.255.255.255
+    if (iptr->ip_src.s_addr == 0xFFFFFFFF ||iptr->ip_dst.s_addr == 0xFFFFFFFF) {
+        return 1;
+    }
+    // filter 127.0.0.1
+    if (iptr->ip_src.s_addr == 0x100007F ||iptr->ip_dst.s_addr == 0x100007F) {
+        return 1;
+    }
+    //printf("%lu %lu\n", iptr->ip_src.s_addr, iptr->ip_dst.s_addr);
+    return 0;
+}
+
 static void handle_ip_packet(struct ip* iptr, int hw_dir)
 {
     int direction = 0; /* incoming */
@@ -398,35 +395,28 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
       history_type **ht_pp;
       void **void_pp;
     } u_ht = { &ht };
-    addr_pair ap; 												//��ַ�˿ڶ�
+    addr_pair ap;
     unsigned int len = 0;
-    struct in6_addr scribdst;   /* Scratch pad. */			//������ַ
-    struct in6_addr scribsrc;   /* Scratch pad. */			//
+    struct in6_addr scribdst;   /* Scratch pad. */
+    struct in6_addr scribsrc;   /* Scratch pad. */
     /* Reinterpret packet type. */
-    struct ip6_hdr* ip6tr = (struct ip6_hdr *) iptr; 			//ȡͷ��
+    struct ip6_hdr* ip6tr = (struct ip6_hdr *) iptr;
 
-    memset(&ap, '\0', sizeof(ap)); 	//���
+    memset(&ap, '\0', sizeof(ap));
 
-    tick(0); 						//???
+    tick(0);
 
-    //--------------------------------------------------------------------------
-    if(options.control_block_filter && IP_V(iptr) == 4) {
-        // filter 224.0.0/24 224.0.1/24
-        if ((iptr->ip_src.s_addr & 0xFFFF) == 0xE0 && !(iptr->ip_src.s_addr & 0xFE0000)) {
-            return;
-        }
-        if ((iptr->ip_dst.s_addr & 0xFFFF) == 0xE0 && !(iptr->ip_dst.s_addr & 0xFE0000)) {
-            return;
-        }
-        // filter 255.255.255.255
-        if (iptr->ip_src.s_addr == 0xFFFFFFFF ||iptr->ip_dst.s_addr == 0xFFFFFFFF) {
-            return;
-        }
-        // filter 127.0.0.1
-        if (iptr->ip_src.s_addr == 0x100007F ||iptr->ip_dst.s_addr == 0x100007F) {
-            return;
-        }
-        //printf("%lu %lu\n", iptr->ip_src.s_addr, iptr->ip_dst.s_addr);
+    /*----------------------- isshe 2017.05.27 --------------------------------
+     * we ignore the ip-v6 packet for now
+     * comment out the following 'if clause' to allow IP-v6 pkt
+     */
+    if (IP_V(iptr) == 6) {
+        return;
+    }
+
+    // control_block_filter
+    if(options.control_block_filter && is_control_block_pkt(iptr)) {
+        return;
     }
 
 

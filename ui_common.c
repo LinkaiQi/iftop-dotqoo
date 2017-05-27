@@ -309,7 +309,7 @@ void analyse_data() {
             addr_info->src_port, addr_info->protocol, 40, options.aggregate_src);
         sprint_host(host2, addr_info->af, &(addr_info->dst6),
             addr_info->dst_port, addr_info->protocol, 40, options.aggregate_dest);
-        printf("%s <->  %s %d %Lf\n", host1, host2, addr_info->trans_protocol, stat->total_sent+stat->total_recv);
+        printf("%s <->  %s %d %Lf\n", host1, host2, addr_info->protocol, stat->total_sent+stat->total_recv);
 
     }
     printf("counter = %d\n", counter);

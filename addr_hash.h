@@ -14,7 +14,6 @@
 typedef struct {
     int af;
     unsigned short int protocol;
-    unsigned short int trans_protocol;
     unsigned short int src_port;
     union {
         struct in_addr src;
