@@ -397,6 +397,7 @@ int is_control_block_pkt(struct ip* iptr) {
 static void handle_ip_packet(struct ip* iptr, int hw_dir)
 {
     int direction = 0; /* incoming */
+    int i;
     history_type* ht;
     union {
       history_type **ht_pp;
@@ -430,7 +431,7 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
     // filter the packets which has the protocol type in the block_protocols list
     // arguments are from the in '-z' option
     if (options.num_of_block_protocols != 0 && iptr->ip_p) {
-        for (int i = 0; i < options.num_of_block_protocols; i++) {
+        for (i = 0; i < options.num_of_block_protocols; i++) {
             if (iptr->ip_p == options.block_protocols[i]) {
                 return;
             }
