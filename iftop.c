@@ -1037,10 +1037,9 @@ void packet_loop(void* ptr) {
 int main(int argc, char **argv) {
 
     // isshe 2017.05.27
-    read_ip_from_file();
-    printList();
-    free_addr_list();
-
+    //read_ip_from_file();
+    //printList();
+    //free_addr_list();
 
     pthread_t thread;
     struct sigaction sa = {};
