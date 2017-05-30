@@ -114,6 +114,9 @@ typedef struct {
 
     int num_of_block_protocols;
     int *block_protocols;
+
+    //2017.05.30-isshe
+    int send_interval;
     //--------------------------------------------------------------------------
 
 } options_t;

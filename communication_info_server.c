@@ -68,7 +68,7 @@ int create_communication_info_server(void)
     clieaddr_len = sizeof(struct sockaddr_in);
     while(1)
     {
-        cliefd = accept(sockfd, (struct sockaddr *)&clieaddr, &clieaddr_len);
+        cliefd = accept(sockfd, (struct sockaddr *)&clieaddr, (socklen_t *)&clieaddr_len);
         if (cliefd == -1)
         {
         	//
@@ -155,6 +155,3 @@ int send_info(communication_info_s info)
 
     return ret;
 }
-
-
-

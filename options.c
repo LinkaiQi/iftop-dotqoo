@@ -37,7 +37,8 @@ extern int port_list[PORT_LIST_LEN]; 		//iftop.c defined
 
 
 //char optstr[] = "+i:f:nNF:G:lhpbBPm:c:s:tL:o:";
-char optstr[] = "+i:f:nNF:G:lhpbBPm:c:s:tL:o:SWZ:T:Y:X:qD:z:";
+//char optstr[] = "+i:f:nNF:G:lhpbBPm:c:s:tL:o:SWZ:T:Y:X:qD:z:M:";
+char optstr[] = "+i:f:F:G:hpSWZ:T:Y:X:qD:z:M:";
 
 /* Global options. */
 
@@ -158,7 +159,7 @@ void options_set_defaults() {
     options.freezeorder = 0;
     options.linedisplay = OPTION_LINEDISPLAY_TWO_LINE;
     options.screen_offset = 0;
-    options.show_totals = 1;	//Ĭ�ϴ���-isshe
+    options.show_totals = 1;	//isshe
     options.max_bandwidth = 0; /* auto */
     options.log_scale = 0;
     options.bar_interval = 1;
@@ -166,7 +167,7 @@ void options_set_defaults() {
     options.no_curses = 0;
     options.num_lines = 10;
 
-	//�����ݱ���Ϊ�ļ�-2017.1.17-isshe
+	//2017.1.17-isshe
 	options.create_file = 0;
 	options.save_file = 0;
 
@@ -191,6 +192,9 @@ void options_set_defaults() {
 
     options.num_of_block_protocols = 0;
     options.block_protocols = (int*)calloc(32, sizeof(int));
+
+    //2017.05.30-isshe
+    options.send_interval = 0;
     //--------------------------------------------------------------------------
 
     /* Figure out the name for the config file */
@@ -213,39 +217,42 @@ static void usage(FILE *fp) {
     fprintf(fp,
 "iftop: display bandwidth usage on an interface by host\n"
 "\n"
-"Synopsis: iftop -h | [-npblNBP] [-i interface] [-f filter code]\n"
-"                               [-F net/mask] [-G net6/mask6]\n"
+"Synopsis: iftop -h | [-q] [-T seconds] [-Y Bytes]\n"
+"                     [-D seconds] [-M mins]\n"
 "\n"
+"   iftop:\n"
+"   -----------------------------------------------------------------------\n"
 "   -h                  display this message\n"
-"   -n                  don't do hostname lookups\n"
-"   -N                  don't convert port numbers to services\n"
+//"   -n                  don't do hostname lookups\n"
+//"   -N                  don't convert port numbers to services\n"
 "   -p                  run in promiscuous mode (show traffic between other\n"
 "                       hosts on the same network segment)\n"
-"   -b                  don't display a bar graph of traffic\n"
-"   -B                  Display bandwidth in bytes\n"
+//"   -b                  don't display a bar graph of traffic\n"
+//"   -B                  Display bandwidth in bytes\n"
 "   -i interface        listen on named interface\n"
 "   -f filter code      use filter code to select packets to count\n"
 "                       (default: none, but only IP packets are counted)\n"
 "   -F net/mask         show traffic flows in/out of IPv4 network\n"
-"   -G net6/mask6       show traffic flows in/out of IPv6 network\n"
-"   -l                  display and count link-local IPv6 traffic (default: off)\n"
-"   -P                  show ports as well as hosts\n"
-"   -m limit            sets the upper limit for the bandwidth scale\n"
-"   -c config file      specifies an alternative configuration file\n"
-"   -t                  use text interface without ncurses\n"
-"\n"
-"   Sorting orders:\n"
-"   -o 2s                Sort by first column (2s traffic average)\n"
-"   -o 10s               Sort by second column (10s traffic average) [default]\n"
-"   -o 40s               Sort by third column (40s traffic average)\n"
-"   -o source            Sort by source address\n"
-"   -o destination       Sort by destination address\n"
-"\n"
-"   The following options are only available in combination with -t\n"
-"   -s num              print one single text output afer num seconds, then quit\n"
-"   -L num              number of lines to print\n"
+//"   -G net6/mask6       show traffic flows in/out of IPv6 network\n"
+//"   -l                  display and count link-local IPv6 traffic (default: off)\n"
+//"   -P                  show ports as well as hosts\n"
+//"   -m limit            sets the upper limit for the bandwidth scale\n"
+//"   -c config file      specifies an alternative configuration file\n"
+//"   -t                  use text interface without ncurses\n"
+//"\n"
+//"   Sorting orders:\n"
+//"   -o 2s                Sort by first column (2s traffic average)\n"
+//"   -o 10s               Sort by second column (10s traffic average) [default]\n"
+//"   -o 40s               Sort by third column (40s traffic average)\n"
+//"   -o source            Sort by source address\n"
+//"   -o destination       Sort by destination address\n"
+//"\n"
+//"   The following options are only available in combination with -t\n"
+//"   -s num              print one single text output afer num seconds, then quit\n"
+//"   -L num              number of lines to print\n"
 "\n"
 "   dotqoo:\n"
+"   -----------------------------------------------------------------------\n"
 "   -Z port,port...     filter port\n"
 "   -W                  write info to file(/tmp)\n"
 "   -Y seconds          delete info interval\n"
@@ -253,14 +260,15 @@ static void usage(FILE *fp) {
 "   -S                  send info to socket\n"
 "   -X seconds          write info to file interval\n"
 "   -q                  ignore control block pkt\n"
-"   -D seconds          drop the info when no pkt send or recv with in -D seconds\n"
+"   -M mins             time interval of send connection info over MQTT\n"
+"   -D seconds          drop the info when no pkt send/recv within -D sec\n"
 "                       after the connection has been created\n"
 "   -z ip_p,ip_p...     block the protocol types which follow by '-z'\n"
 "                       protocol type number can find at\n"
-"                       https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers\n"
+"                       wikipedia.org: 'List_of_IP_protocol_numbers'\n"
 
 "\n"
-"iftop, version " PACKAGE_VERSION "\n"
+"iftop, modified by dotqoo from version: " PACKAGE_VERSION "\n"
 "copyright (c) 2002 Paul Warren <pdw@ex-parrot.com> and contributors\n"
             );
 }
@@ -275,19 +283,28 @@ void options_read_args(int argc, char **argv) {
     char *ip_p = NULL;
 
     opterr = 0;
+    // 2017.05.30-isshe
+    //--------------------------------------------------
+    // disable dns-resolution and port-resolution
+    config_set_string("dns-resolution","false");
+    config_set_string("port-resolution","false");
+    // and make sure always use text interface
+    config_set_string("no-curses", "true");
+    //--------------------------------------------------
+
     while ((opt = getopt(argc, argv, optstr)) != -1) {
         switch (opt) {
             case 'h':
                 usage(stdout);
                 exit(0);
 
-            case 'n':
-                config_set_string("dns-resolution","false");
-                break;
+            //case 'n':
+            //    config_set_string("dns-resolution","false");
+            //    break;
 
-            case 'N':
-                config_set_string("port-resolution","false");
-                break;
+            //case 'N':
+            //    config_set_string("port-resolution","false");
+            //    break;
 
             case 'i':
                 config_set_string("interface", optarg);
@@ -297,17 +314,17 @@ void options_read_args(int argc, char **argv) {
                 config_set_string("filter-code", optarg);
                 break;
 
-            case 'l':
-                config_set_string("link-local", "true");
-                break;
+            //case 'l':
+            //    config_set_string("link-local", "true");
+            //    break;
 
             case 'p':
                 config_set_string("promiscuous", "true");
                 break;
 
-            case 'P':
-                config_set_string("port-display", "on");
-                break;
+            //case 'P':
+            //    config_set_string("port-display", "on");
+            //    break;
 
             case 'F':
                 config_set_string("net-filter", optarg);
@@ -317,39 +334,39 @@ void options_read_args(int argc, char **argv) {
                 config_set_string("net-filter6", optarg);
                 break;
 
-            case 'm':
-                config_set_string("max-bandwidth", optarg);
-                break;
+            //case 'm':
+            //    config_set_string("max-bandwidth", optarg);
+            //    break;
 
-            case 'b':
-                config_set_string("show-bars", "false");
-                break;
+            //case 'b':
+            //    config_set_string("show-bars", "false");
+            //    break;
 
-            case 'B':
-                config_set_string("use-bytes", "true");
-                break;
+            //case 'B':
+            //    config_set_string("use-bytes", "true");
+            //    break;
 
-            case 's':
-                config_set_string("timed-output", optarg);
-                break;
+            //case 's':
+            //    config_set_string("timed-output", optarg);
+            //    break;
 
-            case 't':
-                config_set_string("no-curses", "true");
-                break;
+            //case 't':
+            //    config_set_string("no-curses", "true");
+            //    break;
 
-            case 'L':
-                config_set_string("num-lines", optarg);
-                break;
+            //case 'L':
+            //    config_set_string("num-lines", optarg);
+            //    break;
 
-            case 'o':
-                config_set_string("sort", optarg);
-                break;
+            //case 'o':
+            //    config_set_string("sort", optarg);
+            //    break;
 
-            case 'c':
-                xfree(options.config_file);
-                options.config_file = xstrdup(optarg);
-                options.config_file_specified = 1;
-                break;
+            //case 'c':
+            //    xfree(options.config_file);
+            //    options.config_file = xstrdup(optarg);
+            //    options.config_file_specified = 1;
+            //    break;
 
             case '?':
                 fprintf(stderr, "iftop: unknown option -%c\n", optopt);
@@ -432,6 +449,10 @@ void options_read_args(int argc, char **argv) {
                 //printf("num_of_block_protocols: %d\n", options.num_of_block_protocols);
 				break;
 
+            //2017.05.30-isshe
+            case 'M':
+                printf("send info over MQTT = %s mins\n", optarg);
+                options.send_interval = atoi(optarg) * 60;
             //------------------------------------------------------------------
         }
     }
