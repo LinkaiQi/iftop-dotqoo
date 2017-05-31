@@ -30,7 +30,7 @@
 
 #include "ui_common.h"
 
-//2017.1.18-isshe
+//2017.01.18-isshe
 #include "iftop_api.h"
 #include "communication_info_server.h"
 

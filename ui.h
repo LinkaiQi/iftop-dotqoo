@@ -14,7 +14,7 @@ void ui_tick(int);
 void analyse_data(void);
 void ui_init(void);
 
-//20170121-isshe
+//2017.01.21-isshe
 void showhelp(const char * s);
 
 

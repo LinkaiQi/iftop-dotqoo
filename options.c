@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -195,6 +196,7 @@ void options_set_defaults() {
 
     //2017.05.30-isshe
     options.send_interval = 0;
+    options.send_last = time(NULL);
     //--------------------------------------------------------------------------
 
     /* Figure out the name for the config file */

@@ -117,6 +117,7 @@ typedef struct {
 
     //2017.05.30-isshe
     int send_interval;
+    time_t send_last;
     //--------------------------------------------------------------------------
 
 } options_t;

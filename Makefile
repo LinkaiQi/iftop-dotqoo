@@ -122,7 +122,7 @@ am_iftop_OBJECTS = addr_hash.$(OBJEXT) edline.$(OBJEXT) hash.$(OBJEXT) \
 	addrs_ioctl.$(OBJEXT) addrs_dlpi.$(OBJEXT) dlcommon.$(OBJEXT) \
 	stringmap.$(OBJEXT) cfgfile.$(OBJEXT) vector.$(OBJEXT) \
 	iftop_api.$(OBJEXT) communication_info_server.$(OBJEXT) \
-	read_target_ip.$(OBJEXT)
+	read_target_ip.$(OBJEXT) mqtt.$(OBJEXT)
 iftop_OBJECTS = $(am_iftop_OBJECTS)
 iftop_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_$(V))
@@ -378,7 +378,7 @@ iftop_SOURCES = addr_hash.c edline.c hash.c iftop.c ns_hash.c \
                  addrs_ioctl.c addrs_dlpi.c dlcommon.c \
                  stringmap.c cfgfile.c vector.c \
                  iftop_api.c communication_info_server.c \
-                 read_target_ip.c
+                 read_target_ip.c mqtt.c
 
 
 #iftop_dump_SOURCES = counter_hash.c hash.c iftop-dump.c  \
@@ -391,7 +391,7 @@ noinst_HEADERS = addr_hash.h ether.h ethertype.h extract.h hash.h iftop.h \
                  screenfilter.h serv_hash.h sll.h sorted_list.h tcp.h \
                  threadprof.h token.h ui_common.h ui.h tui.h dlcommon.h stringmap.h \
                  vector.h cfgfile.h ppp.h iftop_api.h communication_info_server.h \
-                 read_target_ip.h
+                 read_target_ip.h mqtt.h
 
 man_MANS = iftop.8
 SUBDIRS = config
@@ -518,6 +518,7 @@ include ./$(DEPDIR)/edline.Po
 include ./$(DEPDIR)/hash.Po
 include ./$(DEPDIR)/iftop.Po
 include ./$(DEPDIR)/iftop_api.Po
+include ./$(DEPDIR)/mqtt.Po
 include ./$(DEPDIR)/ns_hash.Po
 include ./$(DEPDIR)/options.Po
 include ./$(DEPDIR)/read_target_ip.Po

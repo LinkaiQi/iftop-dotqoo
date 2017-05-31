@@ -230,6 +230,7 @@ void tui_loop() {
       case 'u':
         tick(1);
         break;
+      /*
       case 'n':
         options.dnsresolution ^= 1;
         printf("DNS resolution is %s.\n\n", options.dnsresolution ? "ON" : "OFF");
@@ -342,6 +343,7 @@ void tui_loop() {
         printf("Sorting by column destination.\n\n");
         tick(1);
         break;
+      */
       default:
         break;
     }

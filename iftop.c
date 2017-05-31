@@ -57,9 +57,11 @@
 #include "read_target_ip.h"
 
 #include <netinet/ip6.h>
-//------------------------------------------------------------------------------
+//----------------------------------
 //#include <netinet/in.h>
-//------------------------------------------------------------------------------
+// isshe 2017.05.31
+#include "mqtt.h"
+//----------------------------------
 
 /* ethernet address of interface. */
 int have_hw_addr = 0;
@@ -91,6 +93,9 @@ sig_atomic_t foad;
 int port_list[PORT_LIST_LEN]; 		//no more than PORT_LIST_LEN-1 ports
 //2017.01.21-isshe
 time_t history_delete_last = 0;
+//2017.05.31-isshe -----------
+int msg_ready = 0;
+//----------------------------
 
 
 static void finish(int sig) {
@@ -118,10 +123,10 @@ void init_history() {
 history_type* history_create() {
     history_type* h;
     h = xcalloc(1, sizeof *h);
-    //--------------------------------------------------------------------------
+    //--------------------------------------
     h->create_time = time(NULL);
     //h->last_update_time = h->create_time;
-    //--------------------------------------------------------------------------
+    //--------------------------------------
     return h;
 }
 
@@ -149,9 +154,12 @@ int is_low_traffic_connection(history_type* d, time_t t) {
 //------------------------------------------------------------------------------
 
 
-void history_rotate() {
+int history_rotate(time_t t) {
 
-	time_t t = time(NULL); 			//isshe
+    // isshe 2017.05.31 -----
+	//time_t t = time(NULL);
+    int size = 0;
+    // ----------------------
 
     hash_node_type* n = NULL;
     //history_pos = (history_pos + 1) % HISTORY_LENGTH;
@@ -166,6 +174,8 @@ void history_rotate() {
         if (is_short_connection(d, t)) {
             printf("find short connection@@@@@@@@@\n");
         }
+
+        size += 1;
         //printf("last_total: %Lf\n", d->last_total);
         //printf("%d %d %d\n", t - history_delete_last >= options.history_delete_interval, d->total_recv + d->total_sent < options.threshold, d->total_recv + d->total_sent == d->last_total);
         //printf("total: %Lf\tthreshod: %ld \n", d->total_recv + d->total_sent, options.threshold);
@@ -176,6 +186,7 @@ void history_rotate() {
             addr_pair key = *(addr_pair*)(n->key);
             hash_delete(history, &key);
             free(d);
+            size -= 1;
         }
         /*
         else {
@@ -232,10 +243,9 @@ void history_rotate() {
     //}
 
 	//isshe
-	if (t - history_delete_last > options.history_delete_interval)
-	{
+	if (t - history_delete_last > options.history_delete_interval) {
 		history_delete_last = t;
-        //----------------------------------------------------------------------
+        //------------------------------------------------------
         // update variable 'last_total'
         n = NULL;
         hash_next_item(history, &n);
@@ -248,22 +258,25 @@ void history_rotate() {
             n = next;
         }
 
-        //----------------------------------------------------------------------
+        //------------------------------------------------------
 	}
+    return size;
 }
 
 
 void tick(int print) {
     time_t t;
+    int size;
 
     pthread_mutex_lock(&tick_mutex);
 
     t = time(NULL);
     if(t - last_timestamp >= RESOLUTION) {
-        //-----------------------------------
+        //---------------------
         //analyse_data();
         print_all_history();
-        //------------------------------------
+        //---------------------
+        /*
         if (options.no_curses) {
           if (!options.timed_output || (options.timed_output && t - first_timestamp >= options.timed_output)) {
             //tui_print();
@@ -275,9 +288,22 @@ void tick(int print) {
         else {
           ui_print();
         }
-        history_rotate();
+        */
+        // delete unsatisfied entries ---------
+        size = history_rotate(t);
+        // isshe 2017.05.31
+        // check whether need to send info over MQTT
+        if (options.send_interval!= 0 && (t - options.send_last) > options.send_interval) {
+            options.send_last = t;
+            if (!construct_MQTT_msg(size)) {
+                msg_ready = 1;
+            }
+        }
+        // ------------------------------------
         last_timestamp = t;
+
     }
+    /*
     else {
       if (options.no_curses) {
         tui_tick(print);
@@ -286,9 +312,22 @@ void tick(int print) {
         ui_tick(print);
       }
     }
+    */
+
+    // isshe 2017.05.31 ---
+    check_send_status();
+    // --------------------
 
     pthread_mutex_unlock(&tick_mutex);
+
+    // -------- isshe 2017.05.31 ---------
+    if (msg_ready) {
+        send_MQTT_msg();
+        msg_ready = 0;
+    }
+    // -----------------------------------
 }
+
 
 int in_filter_net(struct in_addr addr) {
     int ret;
@@ -801,7 +840,7 @@ static void handle_cooked_packet(unsigned char *args, const struct pcap_pkthdr *
 #endif /* DLT_LINUX_SLL */
 
 /******************************************************************************************/
-/*2017.1.18-isshe*/
+/*2017.01.18-isshe*/
 /*ԭ����ʹ��fopen/fwrite,����wireshark������*/
 
 //�������ݰ����ļ�
@@ -1047,15 +1086,15 @@ void packet_loop(void* ptr) {
  * Entry point. See usage(). */
 int main(int argc, char **argv) {
 
-    // isshe 2017.05.27
+    // isshe 2017.05.27 --------------------
     //read_ip_from_file();
     //printList();
     //free_addr_list();
+    // -------------------------------------
 
     pthread_t thread;
     struct sigaction sa = {};
 
-	//---
 	pthread_t 	info_server_tid;
     setlocale(LC_ALL, "");
 
@@ -1077,6 +1116,11 @@ int main(int argc, char **argv) {
 
     init_history();
 
+    // isshe 2017.05.31 --------------
+    // init MQTT
+    if (options.send_interval != 0) { init_MQTT(); }
+    // -------------------------------
+
     if (options.no_curses) {
       //tui_init();
     }
@@ -1084,7 +1128,6 @@ int main(int argc, char **argv) {
       ui_init();
     }
 
-	//
     pthread_create(&thread, NULL, (void*)&packet_loop, NULL);
 
     //2017.01.20-isshe
@@ -1112,8 +1155,13 @@ int main(int argc, char **argv) {
 
     ui_finish();
 
-    //isshe 2017-05-26
+    // isshe 2017.05.26 --------------
     free(options.block_protocols);
+    // isshe 2017.05.31
+    // disconnect & destory MQTT
+    if (options.send_interval != 0)
+        destory_MQTT();
+    // -------------------------------
 
     return 0;
 }

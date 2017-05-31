@@ -17,7 +17,7 @@
 //2017.01.21
 #define PORT_LIST_LEN 10
 
-//------------------------------------------------------------------------------
+//--------------------------------
 //2017.05.23
 #define PROTOCOL_TCP 0
 #define PROTOCOL_UDP 1
@@ -28,7 +28,7 @@
 
 //2017.05.26
 #define CHECK_AFTER_N_SECS 120
-//------------------------------------------------------------------------------
+//--------------------------------
 
 
 /* At least OpenBSD and NexentaCore do not
@@ -46,11 +46,11 @@ typedef struct {
     //long sent[HISTORY_LENGTH];
     double long total_sent;
     double long total_recv;
-	//--------------------------------------------------------------------------
+	//-------------------------
 	double long last_total;
 	time_t create_time;
 	time_t last_update_time;
-	//--------------------------------------------------------------------------
+	//-------------------------
     //int last_write;
 } history_type;
 
