@@ -295,7 +295,7 @@ void tick(int print) {
         // check whether need to send info over MQTT
         if (options.send_interval!= 0 && (t - options.send_last) > options.send_interval) {
             options.send_last = t;
-            if (!construct_MQTT_msg(size)) {
+            if (!construct_MQTT_msg(size, history)) {
                 msg_ready = 1;
             }
         }

@@ -31,7 +31,7 @@ void connlost(void *context, char *cause);
 
 // mqtt client
 void init_MQTT();
-int construct_MQTT_msg(int n);
+int construct_MQTT_msg(int n, hash_type* history);
 void send_MQTT_msg();
 void check_send_status();
 void destory_MQTT();

@@ -9,6 +9,7 @@
 #include <MQTTClient.h>
 
 #include "mqtt.h"
+#include "hash.h"
 
 #define ADDRESS          "tcp://test.mosquitto.org:1883"
 //#define ADDRESS        "tcp://localhost:1883"
@@ -87,8 +88,8 @@ void init_MQTT() {
 }
 
 
-int construct_MQTT_msg(int n) {
-    hash_node_type* n = NULL;
+int construct_MQTT_msg(int n, hash_type* history) {
+    hash_node_type* node = NULL;
     //int struct_size = sizeof(long)*2 + sizeof(short int)*3 + sizeof(double long)*2;
     if (status == MQTT_STATUS_PENDING)
         return 1;
@@ -99,37 +100,37 @@ int construct_MQTT_msg(int n) {
     status = MQTT_STATUS_PENDING;
 
     // go through the history hash table
-    hash_next_item(history, &n);
+    hash_next_item(history, &node);
     while(n != NULL) {
-        hash_node_type* next = n;
-        history_type* d = (history_type*)n->rec;
+        hash_node_type* next = node;
+        history_type* d = (history_type*)node->rec;
         hash_next_item(history, &next);
 
         //memcpy(data, &p1, sizeof(structure));
         //memcpy(data+sizeof(structure), &p2, sizeof(structure));
 
         // src ip-address
-        memcpy(current, &(n->key->src.s_addr), sizeof(long));
+        memcpy(current, &(node->key->src.s_addr), sizeof(long));
         current += sizeof(long);
         // src port-number
-        memcpy(current, &(n->key->src_port), sizeof(short int));
+        memcpy(current, &(node->key->src_port), sizeof(short int));
         current += sizeof(short int);
         // dst ip-address
-        memcpy(current, &(n->key->dst.s_addr), sizeof(long));
+        memcpy(current, &(node->key->dst.s_addr), sizeof(long));
         current += sizeof(long);
         // dst port-number
-        memcpy(current, &(n->key->dst_port), sizeof(short int));
+        memcpy(current, &(node->key->dst_port), sizeof(short int));
         current += sizeof(short int);
         // protocol
-        memcpy(current, &(n->key->protocol), sizeof(short int));
+        memcpy(current, &(node->key->protocol), sizeof(short int));
         current += sizeof(short int);
         // total data send/rev
-        memcpy(current, &(n->rec->total_sent), sizeof(double long));
+        memcpy(current, &(node->rec->total_sent), sizeof(double long));
         current += sizeof(double long);
-        memcpy(current, &(n->rec->total_recv), sizeof(double long));
+        memcpy(current, &(node->rec->total_recv), sizeof(double long));
         current += sizeof(double long);
 
-        n = next;
+        node = next;
     }
 
     msg_len = struct_size * n;
