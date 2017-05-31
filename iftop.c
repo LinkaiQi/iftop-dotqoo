@@ -315,7 +315,8 @@ void tick(int print) {
     */
 
     // isshe 2017.05.31 ---
-    check_send_status();
+    if (options.send_interval!= 0)
+        check_send_status();
     // --------------------
 
     pthread_mutex_unlock(&tick_mutex);
