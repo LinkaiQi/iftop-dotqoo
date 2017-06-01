@@ -142,11 +142,21 @@ int is_short_connection(history_type* d, time_t t) {
 
 // if the traffic of a connection does not exceed 'options.threshold' Byte within
 // 'options.history_delete_interval' seconds, then the connection is a low traffic connection
+/*
 int is_low_traffic_connection(history_type* d, time_t t) {
     if ((t - history_delete_last >= options.history_delete_interval) &&
         (d->total_recv + d->total_sent < options.threshold) &&
         //if the total sent&recv doesn't change since last time
         (d->total_recv + d->total_sent == d->last_total))
+        return 1;
+    return 0;
+}
+*/
+
+int is_low_traffic_connection(history_type* d, time_t t) {
+    if ((d->total_recv + d->total_sent < options.threshold) &&
+        //if the total sent&recv doesn't change since last time
+        (t - (d->last_update_time) > options.history_delete_interval))
         return 1;
     return 0;
 }
@@ -243,6 +253,7 @@ int history_rotate(time_t t) {
     //}
 
 	//isshe
+    /*
 	if (t - history_delete_last > options.history_delete_interval) {
 		history_delete_last = t;
         //------------------------------------------------------
@@ -260,6 +271,7 @@ int history_rotate(time_t t) {
 
         //------------------------------------------------------
 	}
+    */
     return size;
 }
 
