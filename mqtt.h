@@ -50,7 +50,7 @@ void init_MQTT(void);
 void check_MQTT_connection(time_t t);
 int connect_and_subscribe();
 void get_device_id(void);
-void construct_topic(void)
+void construct_topic(void);
 int construct_MQTT_msg(int n, hash_type* history);
 void send_MQTT_msg(void);
 void check_status(void);

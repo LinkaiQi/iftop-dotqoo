@@ -24,7 +24,8 @@ volatile MQTTClient_deliveryToken deliveredtoken = 0;
 unsigned char *data;
 int struct_size;
 long msg_len;
-int client_id;
+//int client_id;
+char id[32];
 // mqtt status
 mqtt_status_enum status;
 mqtt_connect_enum connection;
@@ -85,7 +86,7 @@ void init_MQTT() {
     // construct topic
     construct_topic();
 
-    MQTTClient_create(&client, ADDRESS, client_id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    MQTTClient_create(&client, ADDRESS, id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
     // set call backs (Asynchronous)
@@ -121,7 +122,7 @@ int connect_and_subscribe() {
 
 void get_device_id() {
     FILE *fp;
-    char id[32];
+    //char id[32];
     int n_id;
 
     /* Open the command for reading. */
@@ -138,22 +139,21 @@ void get_device_id() {
         printf("Failed to read command 'mybox' output\n" );
         exit(1);
     }
-    client_id = atoi(id);
     /* close */
     pclose(fp);
 }
 
 
 void construct_topic() {
-    char str_id[32];
+    //char str_id[32];
 
-    sprintf(str_id, "%d", client_id);
+    //sprintf(str_id, "%d", client_id);
     // NWSTAT/AUTO/{ID}
     strcpy(my_send_topic, SEND_TOPIC);
-    strcpy(my_send_topic, str_id);
+    strcpy(my_send_topic, id);
     // NWSTAT/RETV/{ID}
     strcpy(my_retrieve_topic, RETRIEVE);
-    strcpy(my_retrieve_topic, str_id);
+    strcpy(my_retrieve_topic, id);
 }
 
 
@@ -229,7 +229,7 @@ void send_MQTT_msg() {
     MQTTClient_publishMessage(client, my_send_topic, &pubmsg, &token);
     printf("Waiting for publication\n"
             "on topic %s for client with ClientID: %s\n",
-            my_send_topic, client_id);
+            my_send_topic, id);
     //construct_msg();
 }
 
@@ -249,7 +249,7 @@ void check_status() {
 void destory_MQTT() {
     // Waiting for publication of last msg
     while (status == MQTT_STATUS_PENDING) {
-        check_send_status();
+        check_status();
     }
     MQTTClient_disconnect(client, 10000);
     MQTTClient_destroy(&client);
