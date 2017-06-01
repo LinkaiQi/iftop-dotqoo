@@ -44,10 +44,10 @@
 typedef struct {
     //long recv[HISTORY_LENGTH];
     //long sent[HISTORY_LENGTH];
-    double long total_sent;
-    double long total_recv;
+    unsigned long long total_sent;
+    unsigned long long total_recv;
 	//-------------------------
-	double long last_total;
+	unsigned long long last_total;
 	time_t create_time;
 	time_t last_update_time;
 	//-------------------------

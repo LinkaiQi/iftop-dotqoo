@@ -5,7 +5,7 @@
 /* #undef GETHOSTBYADDR_R_RETURNS_HOSTENT_P */
 
 /* 8-argument gethostbyaddr_r returns int */
-/* #undef GETHOSTBYADDR_R_RETURNS_INT */
+#define GETHOSTBYADDR_R_RETURNS_INT 1
 
 /* C99 fixed-width int types available */
 #define HAVE_C99_INTS 1
@@ -74,7 +74,7 @@
 #define HAVE_SYS_IOCTL_H 1
 
 /* Define to 1 if you have the <sys/sockio.h> header file. */
-#define HAVE_SYS_SOCKIO_H 1
+/* #undef HAVE_SYS_SOCKIO_H */
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -89,7 +89,7 @@
 #define HAVE_TERMIOS_H 1
 
 /* Define to 1 if you have the <termio.h> header file. */
-/* #undef HAVE_TERMIO_H */
+#define HAVE_TERMIO_H 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
@@ -149,10 +149,10 @@
 /* #undef USE_FORKING_RESOLVER */
 
 /* use gethostbyaddr for name resolution */
-#define USE_GETHOSTBYADDR 1
+/* #undef USE_GETHOSTBYADDR */
 
 /* use gethostbyaddr_r for name resolution */
-/* #undef USE_GETHOSTBYADDR_R */
+#define USE_GETHOSTBYADDR_R 1
 
 /* use getnameinfo for name resolution */
 /* #undef USE_GETNAMEINFO */

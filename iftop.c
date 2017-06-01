@@ -299,6 +299,8 @@ void tick(int print) {
                 msg_ready = 1;
             }
         }
+        // check MQTT connection
+        check_MQTT_connection(t);
         // ------------------------------------
         last_timestamp = t;
 
@@ -316,7 +318,7 @@ void tick(int print) {
 
     // isshe 2017.05.31 ---
     if (options.send_interval!= 0)
-        check_send_status();
+        check_status();
     // --------------------
 
     pthread_mutex_unlock(&tick_mutex);
