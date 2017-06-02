@@ -126,9 +126,9 @@ void get_device_id() {
     int n_id;
 
     /* Open the command for reading. */
-    fp = popen("/bin/ls /etc/", "r");
+    fp = popen("/bin/boxid", "r");
     if (fp == NULL) {
-        printf("Failed to run command 'mybox'\n" );
+        printf("Failed to run command 'boxid'\n" );
         exit(1);
     }
     /* Read the output a line at a time - output it. */
@@ -136,7 +136,7 @@ void get_device_id() {
     //    printf("%s", path);
     //}
     if (fgets(id, sizeof(id), fp) == NULL) {
-        printf("Failed to read command 'mybox' output\n" );
+        printf("Failed to read command 'boxid' output\n" );
         exit(1);
     }
     /* close */
@@ -150,10 +150,10 @@ void construct_topic() {
     //sprintf(str_id, "%d", client_id);
     // NWSTAT/AUTO/{ID}
     strcpy(my_send_topic, SEND_TOPIC);
-    strcpy(my_send_topic, id);
+    strcpy(my_send_topic+strlen(SEND_TOPIC), id);
     // NWSTAT/RETV/{ID}
     strcpy(my_retrieve_topic, RETRIEVE);
-    strcpy(my_retrieve_topic, id);
+    strcpy(my_retrieve_topic+strlen(RETRIEVE), id);
 }
 
 
@@ -227,7 +227,7 @@ void send_MQTT_msg() {
     deliveredtoken = 0;
 
     MQTTClient_publishMessage(client, my_send_topic, &pubmsg, &token);
-    printf("Waiting for publication\n"
+    printf("Waiting for publication"
             "on topic %s for client with ClientID: %s\n",
             my_send_topic, id);
     //construct_msg();
