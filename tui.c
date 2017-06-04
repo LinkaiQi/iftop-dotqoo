@@ -39,160 +39,24 @@
 /*
  * UI print function
  */
-
-void tui_print() {
-  sorted_list_node* nn = NULL;
-  char host1[HOSTNAME_LENGTH], host2[HOSTNAME_LENGTH];
-  char buf0_10[10], buf1_10[10], buf2_10[10];
-  int j;
-  static char *label;
-  static char *labellong;
-  int l = 0;
-
-  if (!label) {
-    xfree(label);
-    label = (char *)calloc(PRINT_WIDTH + 1, 1);
-  }
-
-  if (!labellong) {
-    xfree(labellong);
-    labellong = (char *)calloc(PRINT_WIDTH + 1 + 9, 1);
-  }
-
-  if (options.paused ) {
-    return;
-  }
-
-  /* Headings */
-  snprintf(label, PRINT_WIDTH, "%-*s", PRINT_WIDTH, "Host name (port/service if enabled)");
-  printf("%s %s     %10s %10s %10s %10s\n", "   #", label, "last 2s", "last 10s", "last 40s", "cumulative");
-
-  /* Divider line */
-  for (j = 0; j < PRINT_WIDTH + 52; j++) {
-    printf("-");
-  }
-  printf("\n");
-
-  int counter = 0; //-----------------------------------------------------------
-  /* Traverse the list of all connections */
-  while((nn = sorted_list_next_item(&screen_list, nn)) != NULL && l < options.num_lines) {
-    /* Increment the line counter */
-    l++;
-
-    /* Get the connection information */
-    host_pair_line* screen_line = (host_pair_line*)nn->data;
-
-    /* Assemble host information */
-    sprint_host(host1, screen_line->ap.af, &(screen_line->ap.src6), screen_line->ap.src_port, screen_line->ap.protocol, PRINT_WIDTH, options.aggregate_src);
-    sprint_host(host2, screen_line->ap.af, &(screen_line->ap.dst6), screen_line->ap.dst_port, screen_line->ap.protocol, PRINT_WIDTH, options.aggregate_dest);
-
-    /* Send rate per connection */
-    printf("%4d %s%s", l, host1, " =>");
-    for(j = 0; j < HISTORY_DIVISIONS; j++) {
-      readable_size(screen_line->sent[j], buf0_10, 10, 1024, options.bandwidth_in_bytes);
-      printf(" %10s", buf0_10);
-    }
-    /* Cumulative sent data per connection */
-    readable_size(screen_line->total_sent, buf0_10, 10, 1024, 1);
-    printf(" %10s\n", buf0_10);
-
-    /* Receive rate per connection */
-    printf("     %s%s", host2, " <=");
-    for(j = 0; j < HISTORY_DIVISIONS; j++) {
-      readable_size(screen_line->recv[j], buf0_10, 10, 1024, options.bandwidth_in_bytes);
-      printf(" %10s", buf0_10);
-    }
-    /* Cumulative received data per connection */
-    readable_size(screen_line->total_recv, buf0_10, 10, 1024, 1);
-    printf(" %10s\n", buf0_10);
-
-    counter = counter + 1; //---------------------------------------------------
-  }
-  printf("screen_list counter = %d\n", counter); //-----------------------------
-
-  /* Divider line */
-  for (j = 0; j < PRINT_WIDTH + 52; j++) {
-    printf("-");
-  }
-  printf("\n");
-
-  /* Rate totals */
-  snprintf(labellong, PRINT_WIDTH + 9, "%-*s", PRINT_WIDTH + 9, "Total send rate:");
-  printf("%s ", labellong);
-  for(j = 0; j < HISTORY_DIVISIONS; j++) {
-    readable_size((((host_pair_line *)&totals)->sent[j]) , buf0_10, 10, 1024, options.bandwidth_in_bytes);
-    printf("%10s%c", buf0_10, j == HISTORY_DIVISIONS - 1 ? '\n' : ' ');
-  }
-
-  snprintf(labellong, PRINT_WIDTH + 9, "%-*s", PRINT_WIDTH + 9, "Total receive rate:");
-  printf("%s ", labellong);
-  for(j = 0; j < HISTORY_DIVISIONS; j++) {
-    readable_size((((host_pair_line *)&totals)->recv[j]) , buf0_10, 10, 1024, options.bandwidth_in_bytes);
-    printf("%10s%c", buf0_10, j == HISTORY_DIVISIONS - 1 ? '\n' : ' ');
-  }
-
-  snprintf(labellong, PRINT_WIDTH + 9, "%-*s", PRINT_WIDTH + 9, "Total send and receive rate:");
-  printf("%s ", labellong);
-  for(j = 0; j < HISTORY_DIVISIONS; j++) {
-    readable_size((((host_pair_line *)&totals)->sent[j] + ((host_pair_line *)&totals)->recv[j]) , buf0_10, 10, 1024, options.bandwidth_in_bytes);
-    printf("%10s%c", buf0_10, j == HISTORY_DIVISIONS - 1 ? '\n' : ' ');
-  }
-
-  /* Divider line */
-  for (j = 0; j < PRINT_WIDTH + 52; j++) {
-    printf("-");
-  }
-  printf("\n");
-
-  /* Peak traffic */
-  snprintf(labellong, PRINT_WIDTH + 9, "%-*s", PRINT_WIDTH + 9, "Peak rate (sent/received/total):");
-  readable_size(peaksent / RESOLUTION, buf0_10, 10, 1024, options.bandwidth_in_bytes);
-  readable_size(peakrecv / RESOLUTION, buf1_10, 10, 1024, options.bandwidth_in_bytes);
-  readable_size(peaktotal / RESOLUTION, buf2_10, 10, 1024, options.bandwidth_in_bytes);
-  printf("%s %10s %10s %10s\n", labellong, buf0_10, buf1_10, buf2_10);
-
-  /* Cumulative totals */
-  snprintf(labellong, PRINT_WIDTH + 9, "%-*s", PRINT_WIDTH + 9, "Cumulative (sent/received/total):");
-  readable_size(history_totals.total_sent, buf0_10, 10, 1024, 1);
-  readable_size(history_totals.total_recv, buf1_10, 10, 1024, 1);
-  readable_size(history_totals.total_recv + history_totals.total_sent, buf2_10, 10, 1024, 1);
-  printf("%s %10s %10s %10s\n", labellong, buf0_10, buf1_10, buf2_10);
-
-  /* Double divider line */
-  for (j = 0; j < PRINT_WIDTH + 52; j++) {
-    printf("=");
-  }
-  printf("\n\n");
-}
+//void tui_print() { /* function */}
 
 
 /*
  * Text interface data structure initializations.
  */
-void tui_init() {
-  screen_list_init();
-  screen_hash = addr_hash_create();
-  service_hash = serv_hash_create();
-  serv_hash_initialise(service_hash);
-
-  printf("Listening on %s\n", options.interface);
-}
+// void tui_init()
 
 
 /*
  * Tick function indicating screen refresh
  */
-void tui_tick(int print) {
-  if (print) {
-    //tui_print();
-  }
-}
-
+// void tui_tick(int print)
 
 /*
  * Main UI loop. Code any interactive character inputs here.
  */
-void tui_loop() {
+void loop() {
   int i;
   extern sig_atomic_t foad;
 

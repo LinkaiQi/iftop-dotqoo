@@ -12,18 +12,20 @@
 #include "hash.h"
 
 typedef struct {
-    int af;
+    //int af;
     unsigned short int protocol;
     unsigned short int src_port;
-    union {
-        struct in_addr src;
-        struct in6_addr src6;
-    };
+    struct in_addr src;
+    //union {
+    //    struct in_addr src;
+    //    struct in6_addr src6;
+    //};
     unsigned short int dst_port;
-    union {
-        struct in_addr dst;
-        struct in6_addr dst6;
-    };
+    struct in_addr dst;
+    //union {
+    //    struct in_addr dst;
+    //    struct in6_addr dst6;
+    //};
 } addr_pair;
 
 typedef addr_pair key_type;      /* index into hash table */

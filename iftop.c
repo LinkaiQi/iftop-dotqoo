@@ -35,7 +35,7 @@
 #include "addr_hash.h"
 #include "resolver.h"
 #include "ui_common.h"
-#include "ui.h"
+//#include "ui.h"
 #include "tui.h"
 #include "options.h"
 #ifdef DLT_LINUX_SLL
@@ -180,7 +180,6 @@ int history_rotate(time_t t) {
         history_type* d = (history_type*)n->rec;
         hash_next_item(history, &next);
 
-        //----------------------------------------------------------------------
         if (is_short_connection(d, t)) {
             printf("find short connection@@@@@@@@@\n");
         }
@@ -198,59 +197,8 @@ int history_rotate(time_t t) {
             free(d);
             size -= 1;
         }
-        /*
-        else {
-            if (d->last_write == history_pos && !options.history_delete_interval && !options.threshold) {
-                printf("NO specification!!!!\n");
-                printf("NO specification!!!!\n");
-                addr_pair key = *(addr_pair*)(n->key);
-                hash_delete(history, &key);
-                free(d);
-            }
-            else {
-                d->recv[history_pos] = 0;
-                d->sent[history_pos] = 0;
-            }
-        }
-        */
-
-        /*
-        if (
-            (t - history_delete_last >= options.history_delete_interval) &&
-            (d->total_recv + d->total_sent < options.threshold) &&
-            //if the total sent&recv doesn't change since last time
-            (d->total_recv + d->total_sent == d->last_total)
-        ) {
-            printf("Delete a history record!!!!\n");
-            printf("Delete a history record!!!!\n");
-            addr_pair key = *(addr_pair*)(n->key);
-            hash_delete(history, &key);
-            free(d);
-        }
-        else {
-            if (d->last_write == history_pos && !options.history_delete_interval && !options.threshold) {
-                printf("NO specification!!!!\n");
-                printf("NO specification!!!!\n");
-                addr_pair key = *(addr_pair*)(n->key);
-                hash_delete(history, &key);
-                free(d);
-            }
-            else {
-                d->recv[history_pos] = 0;
-                d->sent[history_pos] = 0;
-            }
-        }
-        */
-        //----------------------------------------------------------------------
         n = next;
     }
-
-    //history_totals.sent[history_pos] = 0;
-    //history_totals.recv[history_pos] = 0;
-
-    //if(history_len < HISTORY_LENGTH) {
-    //    history_len++;
-    //}
 
 	//isshe
     /*
@@ -284,23 +232,9 @@ void tick(int print) {
 
     t = time(NULL);
     if(t - last_timestamp >= RESOLUTION) {
-        //---------------------
         //analyse_data();
         print_all_history();
-        //---------------------
-        /*
-        if (options.no_curses) {
-          if (!options.timed_output || (options.timed_output && t - first_timestamp >= options.timed_output)) {
-            //tui_print();
-            if (options.timed_output) {
-              finish(SIGINT);
-            }
-          }
-        }
-        else {
-          ui_print();
-        }
-        */
+
         // delete unsatisfied entries ---------
         size = history_rotate(t);
         // isshe 2017.05.31
@@ -313,34 +247,22 @@ void tick(int print) {
         }
         // check MQTT connection
         check_MQTT_connection(t);
-        // ------------------------------------
+
         last_timestamp = t;
 
     }
-    /*
-    else {
-      if (options.no_curses) {
-        tui_tick(print);
-      }
-      else {
-        ui_tick(print);
-      }
-    }
-    */
 
-    // isshe 2017.05.31 ---
+    // isshe 2017.05.31
     if (options.send_interval!= 0)
         check_status();
-    // --------------------
 
     pthread_mutex_unlock(&tick_mutex);
 
-    // -------- isshe 2017.05.31 ---------
+    // isshe 2017.05.31
     if (msg_ready) {
         send_MQTT_msg();
         msg_ready = 0;
     }
-    // -----------------------------------
 }
 
 
@@ -363,40 +285,41 @@ static int __inline__ ip6_addr_match(struct in6_addr *addr) {
  * if required
  */
 void assign_addr_pair(addr_pair* ap, struct ip* iptr, int flip) { 		//flip:��ת
-  unsigned short int src_port = 0;
-  unsigned short int dst_port = 0;
+    unsigned short int src_port = 0;
+    unsigned short int dst_port = 0;
 
-  /* Arrange for predictable values. */
-  memset(ap, '\0', sizeof(*ap));
+    /* Arrange for predictable values. */
+    memset(ap, '\0', sizeof(*ap));
 
-  if(IP_V(iptr) == 4) {
-    ap->af = AF_INET;
+    //if(IP_V(iptr) == 4) {
+    //ap->af = AF_INET;
 
-  /* Does this protocol use ports? */
-  if(iptr->ip_p == IPPROTO_TCP || iptr->ip_p == IPPROTO_UDP) {
-    /* We take a slight liberty here by treating UDP the same as TCP */
+    /* Does this protocol use ports? */
+    if(iptr->ip_p == IPPROTO_TCP || iptr->ip_p == IPPROTO_UDP) {
+        /* We take a slight liberty here by treating UDP the same as TCP */
 
-    /* Find the TCP/UDP header */
-    struct tcphdr* thdr = ((void*)iptr) + IP_HL(iptr) * 4;
-    src_port = ntohs(thdr->th_sport);
-    dst_port = ntohs(thdr->th_dport);
-  }
+        /* Find the TCP/UDP header */
+        struct tcphdr* thdr = ((void*)iptr) + IP_HL(iptr) * 4;
+        src_port = ntohs(thdr->th_sport);
+        dst_port = ntohs(thdr->th_dport);
+    }
 
-  if(flip == 0) {
-    ap->src = iptr->ip_src;
-    ap->src_port = src_port;
-    ap->dst = iptr->ip_dst;
-    ap->dst_port = dst_port;
-  }
-  else {
-    ap->src = iptr->ip_dst;
-    ap->src_port = dst_port;
-    ap->dst = iptr->ip_src;
-    ap->dst_port = src_port;
-  }
-  } /* IPv4 */
+    if(flip == 0) {
+        ap->src = iptr->ip_src;
+        ap->src_port = src_port;
+        ap->dst = iptr->ip_dst;
+        ap->dst_port = dst_port;
+    }
+    else {
+        ap->src = iptr->ip_dst;
+        ap->src_port = dst_port;
+        ap->dst = iptr->ip_src;
+        ap->dst_port = src_port;
+    }
+  //} /* IPv4 */
+  /*
   else if (IP_V(iptr) == 6) {
-    /* IPv6 packet seen. */
+    // IPv6 packet seen.
     struct ip6_hdr *ip6tr = (struct ip6_hdr *) iptr;
 
     ap->af = AF_INET6;
@@ -421,6 +344,7 @@ void assign_addr_pair(addr_pair* ap, struct ip* iptr, int flip) { 		//flip:��
       ap->dst_port = src_port;
     }
   }
+  */
 }
 
 
@@ -459,20 +383,20 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
     } u_ht = { &ht };
     addr_pair ap;
     unsigned int len = 0;
-    struct in6_addr scribdst;   /* Scratch pad. */
-    struct in6_addr scribsrc;   /* Scratch pad. */
+    //struct in6_addr scribdst;   /* Scratch pad. */
+    //struct in6_addr scribsrc;   /* Scratch pad. */
     /* Reinterpret packet type. */
-    struct ip6_hdr* ip6tr = (struct ip6_hdr *) iptr;
+    //struct ip6_hdr* ip6tr = (struct ip6_hdr *) iptr;
 
     memset(&ap, '\0', sizeof(ap));
 
     tick(0);
 
-    /*----------------------- isshe 2017.05.27 --------------------------------
+    /*----------- isshe 2017.05.27 -----------
      * we ignore the ip-v6 packet for now
      * comment out the following 'if clause' to allow IP-v6 pkt
      */
-    if (IP_V(iptr) == 6) { return; }
+    //if (IP_V(iptr) == 6) { return; }
 
     // control_block_filter
     if(options.control_block_filter && is_control_block_pkt(iptr)) { return; }
@@ -486,11 +410,10 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
             }
         }
     }
-    //--------------------------------------------------------------------------
 
     //if( (IP_V(iptr) ==4 && options.netfilter == 0)
     //        || (IP_V(iptr) == 6 && options.netfilter6 == 0) ) {
-    if(IP_V(iptr) == 4 && options.netfilter == 0) {
+    if (options.netfilter == 0) {
         /*
          * Net filter is off, so assign direction based on MAC address
          */
@@ -520,29 +443,11 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
             assign_addr_pair(&ap, iptr, 1);
             direction = 0;
         }
-        /*
-        else if((IP_V(iptr) == 6) && have_ip6_addr && ip6_addr_match(&ip6tr->ip6_src)) {
-            // outgoing
-            assign_addr_pair(&ap, iptr, 0);
-            direction = 1;
-        }
-        else if((IP_V(iptr) == 6) && have_ip6_addr && ip6_addr_match(&ip6tr->ip6_dst)) {
-            // incoming
-            assign_addr_pair(&ap, iptr, 1);
-            direction = 0;
-        }
-        */
         //else if (IP_V(iptr) == 4 && IN_MULTICAST(iptr->ip_dst.s_addr)) {
         else if (IN_MULTICAST(iptr->ip_dst.s_addr)) {
             assign_addr_pair(&ap, iptr, 1);
             direction = 0;
         }
-        /*
-        else if (IP_V(iptr) == 6 && IN6_IS_ADDR_MULTICAST(&ip6tr->ip6_dst)) {
-            assign_addr_pair(&ap, iptr, 1);
-            direction = 0;
-        }
-        */
         /*
          * Cannot determine direction from hardware or IP levels.  Therefore
          * assume that it was a packet between two other machines, assign
@@ -569,7 +474,8 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
         */
     }
 
-    if(IP_V(iptr) == 4 && options.netfilter != 0) {
+    // if(IP_V(iptr) == 4 && options.netfilter != 0) {
+    if (options.netfilter != 0) {
         /*
          * Net filter on, assign direction according to netmask
          */
@@ -589,59 +495,15 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
         }
     }
 
-    /*
-    if(IP_V(iptr) == 6 && options.netfilter6 != 0) {
-        // Net filter IPv6 active.
-        int j;
-        //else if((IP_V(iptr) == 6) && have_ip6_addr && ip6_addr_match(&ip6tr->ip6_dst)) {
-        // First reduce the participating addresses using the netfilter prefix.
-        // We need scratch pads to do this.
-        for (j=0; j < 16; ++j) {
-            scribdst.s6_addr[j] = ip6tr->ip6_dst.s6_addr[j]
-                                        & options.netfilter6mask.s6_addr[j];
-            scribsrc.s6_addr[j] = ip6tr->ip6_src.s6_addr[j]
-                                        & options.netfilter6mask.s6_addr[j];
-        }
-
-        // Now look for any hits.
-        //if(in_filter_net(iptr->ip_src) && !in_filter_net(iptr->ip_dst)) {
-        if (IN6_ARE_ADDR_EQUAL(&scribsrc, &options.netfilter6net)
-                && ! IN6_ARE_ADDR_EQUAL(&scribdst, &options.netfilter6net)) {
-            // out of network
-            assign_addr_pair(&ap, iptr, 0);
-            direction = 1;
-        }
-        //else if(in_filter_net(iptr->ip_dst) && !in_filter_net(iptr->ip_src)) {
-        else if (! IN6_ARE_ADDR_EQUAL(&scribsrc, &options.netfilter6net)
-                    && IN6_ARE_ADDR_EQUAL(&scribdst, &options.netfilter6net)) {
-            // into network
-            assign_addr_pair(&ap, iptr, 1);
-            direction = 0;
-        }
-        else {
-            // drop packet
-            return ;
-        }
-    }
-    */
-
-    /*
-#if 1
-    // Test if link-local IPv6 packets should be dropped.
-    if( IP_V(iptr) == 6 && !options.link_local
-            && (IN6_IS_ADDR_LINKLOCAL(&ip6tr->ip6_dst)
-                || IN6_IS_ADDR_LINKLOCAL(&ip6tr->ip6_src)) )
-        return;
-#endif
-    */
-
+    ap.protocol = iptr->ip_p;
     /* Do address resolving. */
+    /*
     switch (IP_V(iptr)) {
       case 4:
           ap.protocol = iptr->ip_p;
-          /* Add the addresses to be resolved */
-          /* The IPv4 address is embedded in a in6_addr structure,
-           * so it need be copied, and delivered to resolve(). */
+          // Add the addresses to be resolved
+          // The IPv4 address is embedded in a in6_addr structure,
+          // so it need be copied, and delivered to resolve().
           memset(&scribdst, '\0', sizeof(scribdst));
           memcpy(&scribdst, &iptr->ip_dst, sizeof(struct in_addr));
           resolve(ap.af, &scribdst, NULL, 0);
@@ -649,74 +511,91 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
           memcpy(&scribsrc, &iptr->ip_src, sizeof(struct in_addr));
           resolve(ap.af, &scribsrc, NULL, 0);
           break;
-      /*
       case 6:
           ap.protocol = ip6tr->ip6_nxt;
           // Add the addresses to be resolved
           resolve(ap.af, &ip6tr->ip6_dst, NULL, 0);
           resolve(ap.af, &ip6tr->ip6_src, NULL, 0);
-      */
       default:
           break;
     }
+    */
 
 	//printf("src port = %d, dst port = %d\n", ap.src_port, ap.dst_port);
 
-    //--------------------------------------------------------------------------
-    /*
-    if (ap.trans_protocol == 1) {
-        printf("----------------------------\n");
-        printf("%d %d\n", ap.src_port, ap.dst_port);
-        printf("%d %d\n", in_port_list(port_list, PORT_LIST_LEN, ap.src_port),
-            in_port_list(port_list, PORT_LIST_LEN, ap.dst_port));
-    }
-    */
-    //--------------------------------------------------------------------------
 	//isshe
-    //if(hash_find(history, &ap, u_ht.void_pp) == HASH_STATUS_KEY_NOT_FOUND ) {
-	if (in_port_list(port_list, PORT_LIST_LEN, ap.src_port)== 0
-			&& in_port_list(port_list, PORT_LIST_LEN, ap.dst_port) == 0)
-	{
-		if(hash_find(history, &ap, u_ht.void_pp) == HASH_STATUS_KEY_NOT_FOUND ) {
+    /* drop the pkt if it in the port list */
+	if (in_port_list(port_list, PORT_LIST_LEN, ap.src_port)
+        || in_port_list(port_list, PORT_LIST_LEN, ap.dst_port)) {
+        return;
+    }
 
-	        ht = history_create();
-	        hash_insert(history, &ap, ht);
-	    }
+    int order;
+	if (hash_find(history, &ap, u_ht.void_pp) == HASH_STATUS_KEY_NOT_FOUND) {
+        // isshe 2017.06.03
 
-	    /* Do accounting. */ 					//����IP���ݰ��ĳ���?����ͷ������?
-	    switch (IP_V(iptr)) {
-	      case 4:
-	          len = ntohs(iptr->ip_len);
-	          break;
-	      case 6:
-	          len = ntohs(ip6tr->ip6_plen) + 40;
-	      default:
-	          break;
-	    }
+        // TODO switch src/dst order
+        /*
+        struct in_addr addr_temp = ap.src;
+        ap.src = ap.dst;
+        ap.dst = addr_temp;
 
-	    /* Update record */
-	    //ht->last_write = history_pos;
-        //----------------------------------------------------------------------
-        ht->last_update_time = time(NULL);
-        //printf("we have updated the record!\n");
-        //----------------------------------------------------------------------
-	    if( ((IP_V(iptr) == 4) && (iptr->ip_src.s_addr == ap.src.s_addr))
-	       || ((IP_V(iptr) == 6) && !memcmp(&ip6tr->ip6_src, &ap.src6, sizeof(ap.src6))) )
-	    {
-	        //ht->sent[history_pos] += len;
-	        ht->total_sent += len;
-	    }
-	    else {
-	        //ht->recv[history_pos] += len;
-	        ht->total_recv += len;
-	    }
-	}
-    //--------------------------------------------------------------------------
-    else { return; }
-    //--------------------------------------------------------------------------
+        unsigned short int port_temp = ap.src_port;
+        ap.src_port = ap.dst_port;
+        ap.dst_port = port_temp;
+        */
 
+        addr_pair ap2;
 
+        ap2.src = ap.dst;
+        ap2.dst = ap.src;
+        ap2.src_port = ap.dst_port;
+        ap2.dst_port = ap.src_port;
+        ap2.protocol = ap.protocol;
 
+        // search again
+        if (hash_find(history, &ap2, u_ht.void_pp) == HASH_STATUS_KEY_NOT_FOUND) {
+            // both ordering are not in the history hash table
+            ht = history_create();
+    	    hash_insert(history, &ap, ht);
+            order = NOTSWITCH;
+        } else { order = SWITCH; }
+
+    } else { order = NOTSWITCH; }
+
+    /* Do accounting. */
+    len = ntohs(iptr->ip_len);
+
+    /* Update record */
+    //ht->last_write = history_pos;
+    //--------------------------------------------
+    ht->last_update_time = time(NULL);
+    //printf("we have updated the record!\n");
+    //--------------------------------------------
+
+    // TODO switch order
+    if (order == NOTSWITCH) {
+        if (iptr->ip_src.s_addr == ap.src.s_addr) {
+            //ht->sent[history_pos] += len;
+            ht->total_sent += len;
+        }
+        else {
+            //ht->recv[history_pos] += len;
+            ht->total_recv += len;
+        }
+
+    } else {
+        if (iptr->ip_src.s_addr == ap.src.s_addr) {
+            //ht->sent[history_pos] += len;
+            ht->total_recv += len;
+        }
+        else {
+            //ht->recv[history_pos] += len;
+            ht->total_sent += len;
+        }
+    }
+
+    /* add to total recv/send stats */
     if(direction == 0) {
         /* incoming */
         //history_totals.recv[history_pos] += len;
@@ -727,6 +606,7 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
         history_totals.total_sent += len;
     }
 }
+
 
 static void handle_raw_packet(unsigned char* args, const struct pcap_pkthdr* pkthdr, const unsigned char* packet)
 {
@@ -918,9 +798,9 @@ static void handle_eth_packet(unsigned char* args, const struct pcap_pkthdr* pkt
         payload += sizeof(struct vlan_8021q_header);
     }
 
-    if(ether_type == ETHERTYPE_IP || ether_type == ETHERTYPE_IPV6) {
+    if(ether_type == ETHERTYPE_IP /* || ether_type == ETHERTYPE_IPV6 */) {
         struct ip* iptr;
-        int dir = -1; 									//���򣬽���if
+        int dir = -1;
 
         /*
          * Is a direction implied by the MAC addresses?
@@ -940,7 +820,7 @@ static void handle_eth_packet(unsigned char* args, const struct pcap_pkthdr* pkt
 
         /* Distinguishing ip_hdr and ip6_hdr will be done later. */
         iptr = (struct ip*)(payload); /* alignment? */
-        handle_ip_packet(iptr, dir); 		//iptr, ͷ����ʼ;dir:����
+        handle_ip_packet(iptr, dir);
     }
 }
 
@@ -1028,7 +908,7 @@ void packet_init() {
     }
 
     //    exit(0);
-    resolver_initialise(); 			//���߳̽���
+    //resolver_initialise();
 
 	//���ӿ�
     pd = pcap_open_live(options.interface, CAPTURE_LENGTH, options.promiscuous, 1000, errbuf);
@@ -1037,7 +917,7 @@ void packet_init() {
         fprintf(stderr, "pcap_open_live(%s): %s\n", options.interface, errbuf);
         exit(1);
     }
-    dlt = pcap_datalink(pd); 			//����������·�������
+    dlt = pcap_datalink(pd);
     if(dlt == DLT_EN10MB) {
         packet_handler = handle_eth_packet;
     }
@@ -1133,15 +1013,17 @@ int main(int argc, char **argv) {
 
     // isshe 2017.05.31 --------------
     // init MQTT
-    if (options.send_interval != 0) { init_MQTT(); }
+    if (options.send_interval != 0) {
+        init_MQTT();
+    }
     // -------------------------------
 
-    if (options.no_curses) {
+    //if (options.no_curses) {
       //tui_init();
-    }
-    else {
-      ui_init();
-    }
+    //}
+    //else {
+      //ui_init();
+    //}
 
     pthread_create(&thread, NULL, (void*)&packet_loop, NULL);
 
@@ -1152,23 +1034,23 @@ int main(int argc, char **argv) {
     /* Keep the starting time (used for timed termination) */
     first_timestamp = time(NULL);
 
-    if (options.no_curses) {
-      if (options.timed_output) {
+    //if (options.no_curses) {
+    if (options.timed_output) {
         while(!foad) {
-          sleep(1);
+            sleep(1);
         }
-      }
-      else {
-        tui_loop();
-      }
     }
     else {
-      ui_loop();
+        loop();
     }
+    //}
+    //else {
+     // ui_loop();
+    //}
 
     pthread_cancel(thread);
 
-    ui_finish();
+    //ui_finish();
 
     // isshe 2017.05.26 --------------
     free(options.block_protocols);
@@ -1176,6 +1058,8 @@ int main(int argc, char **argv) {
     // disconnect & destory MQTT
     if (options.send_interval != 0)
         destory_MQTT();
+    // free history hash table
+    hash_destroy(history);
     // -------------------------------
 
     return 0;

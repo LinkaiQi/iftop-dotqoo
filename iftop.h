@@ -17,18 +17,12 @@
 //2017.01.21
 #define PORT_LIST_LEN 10
 
-//--------------------------------
-//2017.05.23
-#define PROTOCOL_TCP 0
-#define PROTOCOL_UDP 1
-#define PROTOCOL_RAW 2
-#define PROTOCOL_IGMP 3
-#define PROTOCOL_ICMP 4
-#define PROTOCOL_OTHER 5
-
 //2017.05.26
 #define CHECK_AFTER_N_SECS 120
-//--------------------------------
+
+//2017.06.4
+#define SWITCH		1
+#define NOTSWITCH 	0
 
 
 /* At least OpenBSD and NexentaCore do not

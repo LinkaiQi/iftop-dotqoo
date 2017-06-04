@@ -13,6 +13,7 @@ int compare(void* a, void* b) {
     addr_pair* aa = (addr_pair*)a;
     addr_pair* bb = (addr_pair*)b;
 
+    /*
     if (aa->af != bb->af)
         return 0;
 
@@ -23,9 +24,10 @@ int compare(void* a, void* b) {
                && aa->dst_port == bb->dst_port
                && aa->protocol == bb->protocol);
     }
+    */
 
     /* AF_INET or unknown. */
-    return (aa->src.s_addr == bb->src.s_addr 
+    return (aa->src.s_addr == bb->src.s_addr
             && aa->src_port == bb->src_port
             && aa->dst.s_addr == bb->dst.s_addr
             && aa->dst_port == bb->dst_port
@@ -43,6 +45,7 @@ int hash(void* key) {
     int hash;
     addr_pair* ap = (addr_pair*)key;
 
+    /*
     if (ap->af == AF_INET6) {
         uint32_t* addr6 = (uint32_t*)ap->src6.s6_addr;
 
@@ -59,15 +62,16 @@ int hash(void* key) {
                 + hash_uint32(addr6[3])
                 + ap->dst_port) % 0xFF;
     } else {
-        in_addr_t addr = ap->src.s_addr;
+    */
+    in_addr_t addr = ap->src.s_addr;
 
-        hash = ( hash_uint32(addr)
-                + ap->src_port) % 0xFF;
+    hash = ( hash_uint32(addr)
+            + ap->src_port) % 0xFF;
 
-        addr = ap->dst.s_addr;
-        hash = ( hash + hash_uint32(addr)
-                + ap->dst_port) % 0xFF;
-    }
+    addr = ap->dst.s_addr;
+    hash = ( hash + hash_uint32(addr)
+            + ap->dst_port) % 0xFF;
+    //}
 
     return hash;
 }
@@ -86,7 +90,7 @@ void delete_key(void* key) {
 /*
  * Allocate and return a hash
  */
-hash_type* addr_hash_create() { 			//Õâ¸ö²»ÊÇºÜ¶®£¬·ÖÅäµÄ´óĞ¡ºÍhash_tableµÄÊ¹ÓÃ¡£
+hash_type* addr_hash_create() { 			//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÇºÜ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½Ğ¡ï¿½ï¿½hash_tableï¿½ï¿½Ê¹ï¿½Ã¡ï¿½
     hash_type* hash_table;
     hash_table = xcalloc(hash_table_size, sizeof *hash_table);
     hash_table->size = hash_table_size;
@@ -97,4 +101,3 @@ hash_type* addr_hash_create() { 			//Õâ¸ö²»ÊÇºÜ¶®£¬·ÖÅäµÄ´óĞ¡ºÍhash_tableµÄÊ¹ÓÃ¡
     hash_initialise(hash_table);
     return hash_table;
 }
-
