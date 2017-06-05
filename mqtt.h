@@ -52,6 +52,7 @@ int connect_and_subscribe();
 void get_device_id(void);
 void construct_topic(void);
 int construct_MQTT_msg(int n, hash_type* history);
+void compress_msg(void);
 void send_MQTT_msg(void);
 void check_status(void);
 void destory_MQTT(void);

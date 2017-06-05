@@ -7,7 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <assert.h>
 #include <MQTTClient.h>
+
+#include "zlib.h"
 
 #include "mqtt.h"
 #include "hash.h"
@@ -34,6 +37,9 @@ char my_send_topic[32];
 char my_retrieve_topic[32];
 // time
 time_t last_try;
+// zlib
+unsigned char *out;
+unsigned long compressed_size;
 
 
 
@@ -82,7 +88,8 @@ void init_MQTT() {
     status = MQTT_STATUS_INIT;
     connection = MQTT_CONNECT_OFF;
     // get device ID
-    get_device_id();
+    //get_device_id();
+    strcpy(id, "123456");
     // construct topic
     construct_topic();
 
@@ -165,8 +172,10 @@ int construct_MQTT_msg(int n, hash_type* history) {
     history_type* stat;
     hash_node_type* node = NULL;
     //int struct_size = sizeof(long)*2 + sizeof(short int)*3 + sizeof(unsigned long long)*2;
-    if (status == MQTT_STATUS_PENDING || connection == MQTT_CONNECT_OFF)
+    if (status == MQTT_STATUS_PENDING || connection == MQTT_CONNECT_OFF) {
+        printf("return construct_MQTT_msg\n");
         return 1;
+    }
     // allocate string data
     data = (unsigned char *)calloc(1, struct_size * n);
     unsigned char *current = data;
@@ -211,8 +220,47 @@ int construct_MQTT_msg(int n, hash_type* history) {
     }
 
     msg_len = struct_size * n;
+
+    compress_msg();
+    printf("finish calling compress_msg\n");
+
     // return in success
     return 0;
+}
+
+
+void compress_msg(/* arguments */) {
+    printf("compress_msg has been called\n");
+    int ret, flush;
+    unsigned have;
+    z_stream strm;
+    //unsigned char in[CHUNK];
+    //unsigned char out[msg_len];
+    out = (unsigned char *)calloc(1, msg_len);
+    /* allocate deflate state */
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    //ret = deflateInit(&strm, Z_BEST_COMPRESSION);
+    ret = deflateInit(&strm, Z_DEFAULT_COMPRESSION);
+    if (ret != Z_OK) {
+        fprintf(stderr, "deflateInit error");
+        exit(1);
+    }
+    strm.avail_in = (uInt)msg_len; // size of input, string + terminator
+    strm.next_in = (Bytef *)data; // input char array
+    strm.avail_out = (uInt)msg_len; // size of output
+    strm.next_out = (Bytef *)out; // output char array
+
+    // the actual compression work.
+    //deflateInit(&strm, Z_BEST_COMPRESSION);
+    deflate(&strm, Z_FINISH);
+    deflateEnd(&strm);
+
+    compressed_size = strm.total_out;
+
+    printf("uncompressed size is%ld\n", msg_len);
+    printf("Compressed size is: %lu\n", strm.total_out);
 }
 
 
@@ -220,14 +268,14 @@ void send_MQTT_msg() {
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
     //MQTTClient_deliveryToken token;
 
-    pubmsg.payload = data;
-    pubmsg.payloadlen = msg_len;
+    pubmsg.payload = out;
+    pubmsg.payloadlen = compressed_size;
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
     deliveredtoken = 0;
 
     MQTTClient_publishMessage(client, my_send_topic, &pubmsg, &token);
-    printf("Waiting for publication"
+    printf("Waiting for publication "
             "on topic %s for client with ClientID: %s\n",
             my_send_topic, id);
     //construct_msg();
@@ -241,6 +289,8 @@ void check_status() {
         status = MQTT_STATUS_COMPLETE;
         // free string data buffer
         free(data);
+        free(out);
+
         printf("msg sent successful\n");
     }
 }
