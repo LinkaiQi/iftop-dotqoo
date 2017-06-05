@@ -45,6 +45,7 @@ typedef struct {
 	time_t create_time;
 	time_t last_update_time;
 	//-------------------------
+	int approval;
     //int last_write;
 } history_type;
 

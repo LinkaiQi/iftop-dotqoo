@@ -107,6 +107,7 @@ void init_MQTT() {
 
 void check_MQTT_connection(time_t t) {
     if (connection == MQTT_CONNECT_OFF && t - last_try > RECONNECT_INTERVAL) {
+        last_try = t;
         connect_and_subscribe();
     }
 }
@@ -192,29 +193,31 @@ int construct_MQTT_msg(int n, hash_type* history) {
         addr_info = (addr_pair*)node->key;
         stat = (history_type*)node->rec;
 
-        //memcpy(data, &p1, sizeof(structure));
-        //memcpy(data+sizeof(structure), &p2, sizeof(structure));
+        if (stat->approval) {
+            //memcpy(data, &p1, sizeof(structure));
+            //memcpy(data+sizeof(structure), &p2, sizeof(structure));
 
-        // src ip-address
-        memcpy(current, &(addr_info->src.s_addr), sizeof(long));
-        current += sizeof(long);
-        // src port-number
-        memcpy(current, &(addr_info->src_port), sizeof(short int));
-        current += sizeof(short int);
-        // dst ip-address
-        memcpy(current, &(addr_info->dst.s_addr), sizeof(long));
-        current += sizeof(long);
-        // dst port-number
-        memcpy(current, &(addr_info->dst_port), sizeof(short int));
-        current += sizeof(short int);
-        // protocol
-        memcpy(current, &(addr_info->protocol), sizeof(short int));
-        current += sizeof(short int);
-        // total data send/rev
-        memcpy(current, &(stat->total_sent), sizeof(unsigned long long));
-        current += sizeof(unsigned long long);
-        memcpy(current, &(stat->total_recv), sizeof(unsigned long long));
-        current += sizeof(unsigned long long);
+            // src ip-address
+            memcpy(current, &(addr_info->src.s_addr), sizeof(long));
+            current += sizeof(long);
+            // src port-number
+            memcpy(current, &(addr_info->src_port), sizeof(short int));
+            current += sizeof(short int);
+            // dst ip-address
+            memcpy(current, &(addr_info->dst.s_addr), sizeof(long));
+            current += sizeof(long);
+            // dst port-number
+            memcpy(current, &(addr_info->dst_port), sizeof(short int));
+            current += sizeof(short int);
+            // protocol
+            memcpy(current, &(addr_info->protocol), sizeof(short int));
+            current += sizeof(short int);
+            // total data send/rev
+            memcpy(current, &(stat->total_sent), sizeof(unsigned long long));
+            current += sizeof(unsigned long long);
+            memcpy(current, &(stat->total_recv), sizeof(unsigned long long));
+            current += sizeof(unsigned long long);
+        }
 
         node = next;
     }

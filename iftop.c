@@ -180,23 +180,32 @@ int history_rotate(time_t t) {
         history_type* d = (history_type*)n->rec;
         hash_next_item(history, &next);
 
-        if (is_short_connection(d, t)) {
-            printf("find short connection@@@@@@@@@\n");
+        if (!d->approval) {
+            if (is_short_connection(d, t) || is_low_traffic_connection(d, t)) {
+                printf("Delete a history record!!!!\n");
+                printf("Delete a history record!!!!\n");
+                addr_pair key = *(addr_pair*)(n->key);
+                hash_delete(history, &key);
+                free(d);
+            } else {
+                /* if the connection satisfied the criteria,
+                 * let the connection stat stay at the history hash table permanently */
+                if ((d->last_update_time - d->create_time >= options.duration) &&
+                    (d->total_recv + d->total_sent > options.threshold)) {
+                    d->approval = 1;
+                }
+            }
         }
 
-        size += 1;
+        if (d->approval) {
+            size += 1;
+        }
+
+        //size += 1;
         //printf("last_total: %Lf\n", d->last_total);
         //printf("%d %d %d\n", t - history_delete_last >= options.history_delete_interval, d->total_recv + d->total_sent < options.threshold, d->total_recv + d->total_sent == d->last_total);
         //printf("total: %Lf\tthreshod: %ld \n", d->total_recv + d->total_sent, options.threshold);
         //printf("history_delete_interval: %ld\tnowdiff: %ld\n", options.history_delete_interval, t - history_delete_last);
-        if (is_short_connection(d, t) || is_low_traffic_connection(d, t)) {
-            printf("Delete a history record!!!!\n");
-            printf("Delete a history record!!!!\n");
-            addr_pair key = *(addr_pair*)(n->key);
-            hash_delete(history, &key);
-            free(d);
-            size -= 1;
-        }
         n = next;
     }
 
