@@ -233,7 +233,7 @@ int history_rotate(time_t t) {
 }
 
 
-void tick(int print) {
+void tick(int send) {
     time_t t;
     int size;
 
@@ -242,14 +242,15 @@ void tick(int print) {
     t = time(NULL);
     if(t - last_timestamp >= RESOLUTION) {
         //analyse_data();
-        print_all_history();
+        // print_all_history();
 
         // delete unsatisfied entries ---------
         size = history_rotate(t);
         // isshe 2017.05.31
         // check whether need to send info over MQTT
-        if (options.send_interval!= 0 && (t - options.send_last) > options.send_interval) {
+        if (options.send_interval!= 0 && ((t - options.send_last) > options.send_interval || send)) {
             options.send_last = t;
+            printf(" ---------------------------- Sending data (MQTT) ---------------------------- \n");
             if (!construct_MQTT_msg(size, history)) {
                 msg_ready = 1;
             }

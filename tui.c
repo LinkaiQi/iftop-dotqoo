@@ -92,7 +92,7 @@ void loop() {
   while ((i = getchar()) != 'q' && foad == 0) {
     switch (i) {
       case 'u':
-        tick(1);
+        tick(0);
         break;
       /*
       case 'n':

@@ -453,7 +453,7 @@ void options_read_args(int argc, char **argv) {
 
             //2017.05.30-isshe
             case 'M':
-                printf("send info over MQTT = %s mins\n", optarg);
+                printf("send data intervl (MQTT) = %s mins\n", optarg);
                 options.send_interval = atoi(optarg) * 60;
             //------------------------------------------------------------------
         }

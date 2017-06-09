@@ -44,7 +44,7 @@ unsigned long compressed_size;
 
 
 void delivered(void *context, MQTTClient_deliveryToken dt) {
-    printf("Message with token value %d delivery confirmed\n", dt);
+    printf(" Message with token value %d delivery confirmed\n", dt);
     deliveredtoken = dt;
 }
 
@@ -52,9 +52,8 @@ void delivered(void *context, MQTTClient_deliveryToken dt) {
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
     int i;
     char* payloadptr;
-    printf("Message arrived\n");
-    printf("     topic: %s\n", topicName);
-    printf("   message: ");
+    // printf("Message arrived,  Topic: %s, Message: ", topicName);
+    printf("\n >>> Receive data request, Topic: %s, Message: ", topicName);
     payloadptr = message->payload;
     for(i=0; i<message->payloadlen; i++)
     {
@@ -63,6 +62,8 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     putchar('\n');
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
+    // Call tick send MQTT msg
+    tick(1);
     return 1;
 }
 
@@ -166,9 +167,6 @@ void construct_topic() {
 
 
 int construct_MQTT_msg(int n, hash_type* history) {
-
-    printf("!!!!! n: %d\n", n);
-
     addr_pair* addr_info;
     history_type* stat;
     hash_node_type* node = NULL;
@@ -225,7 +223,6 @@ int construct_MQTT_msg(int n, hash_type* history) {
     msg_len = struct_size * n;
 
     compress_msg();
-    printf("finish calling compress_msg\n");
 
     // return in success
     return 0;
@@ -233,7 +230,6 @@ int construct_MQTT_msg(int n, hash_type* history) {
 
 
 void compress_msg(/* arguments */) {
-    printf("compress_msg has been called\n");
     int ret, flush;
     unsigned have;
     z_stream strm;
@@ -262,8 +258,7 @@ void compress_msg(/* arguments */) {
 
     compressed_size = strm.total_out;
 
-    printf("uncompressed size is%ld\n", msg_len);
-    printf("Compressed size is: %lu\n", strm.total_out);
+    printf(" Compress MQTT Message  %ld byte -> %ld byte\n", msg_len, strm.total_out);
 }
 
 
@@ -278,8 +273,8 @@ void send_MQTT_msg() {
     deliveredtoken = 0;
 
     MQTTClient_publishMessage(client, my_send_topic, &pubmsg, &token);
-    printf("Waiting for publication "
-            "on topic %s for client with ClientID: %s\n",
+    printf(" Waiting for publication "
+            "Topic: %s ClientID: %s\n",
             my_send_topic, id);
     //construct_msg();
 }
@@ -293,8 +288,7 @@ void check_status() {
         // free string data buffer
         free(data);
         free(out);
-
-        printf("msg sent successful\n");
+        printf(" ------------------------ Data sent successful (MQTT) ------------------------ \n\n");
     }
 }
 
