@@ -53,7 +53,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     int i;
     char* payloadptr;
     // printf("Message arrived,  Topic: %s, Message: ", topicName);
-    printf("\n >>> Receive data request, Topic: %s, Message: ", topicName);
+    printf("\n <<< Receive data request, Topic: %s, Message: ", topicName);
     payloadptr = message->payload;
     for(i=0; i<message->payloadlen; i++)
     {
@@ -288,7 +288,7 @@ void check_status() {
         // free string data buffer
         free(data);
         free(out);
-        printf(" ------------------------ Data sent successful (MQTT) ------------------------ \n\n");
+        printf(" Data sent successful\n\n");
     }
 }
 

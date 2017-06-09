@@ -240,8 +240,8 @@ void tick(int send) {
     pthread_mutex_lock(&tick_mutex);
 
     t = time(NULL);
-    if(t - last_timestamp >= RESOLUTION) {
-        //analyse_data();
+    if(t - last_timestamp >= RESOLUTION || send) {
+        // analyse_data();
         // print_all_history();
 
         // delete unsatisfied entries ---------
@@ -250,7 +250,7 @@ void tick(int send) {
         // check whether need to send info over MQTT
         if (options.send_interval!= 0 && ((t - options.send_last) > options.send_interval || send)) {
             options.send_last = t;
-            printf(" ---------------------------- Sending data (MQTT) ---------------------------- \n");
+            printf(" >>> Sending data (MQTT)\n");
             if (!construct_MQTT_msg(size, history)) {
                 msg_ready = 1;
             }

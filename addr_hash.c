@@ -7,7 +7,8 @@
 #include "hash.h"
 #include "iftop.h"
 
-#define hash_table_size 256
+// define hash_table_size 256
+#define hash_table_size 4096
 
 int compare(void* a, void* b) {
     addr_pair* aa = (addr_pair*)a;
@@ -66,11 +67,11 @@ int hash(void* key) {
     in_addr_t addr = ap->src.s_addr;
 
     hash = ( hash_uint32(addr)
-            + ap->src_port) % 0xFF;
+            + ap->src_port) % 0xFFF;
 
     addr = ap->dst.s_addr;
     hash = ( hash + hash_uint32(addr)
-            + ap->dst_port) % 0xFF;
+            + ap->dst_port) % 0xFFF;
     //}
 
     return hash;
