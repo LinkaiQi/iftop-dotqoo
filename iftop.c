@@ -242,7 +242,7 @@ void tick(int send) {
     t = time(NULL);
     if(t - last_timestamp >= RESOLUTION || send) {
         // analyse_data();
-        // print_all_history();
+        print_all_history();
 
         // delete unsatisfied entries ---------
         size = history_rotate(t);
@@ -540,38 +540,10 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
         return;
     }
 
-    int order;
 	if (hash_find(history, &ap, u_ht.void_pp) == HASH_STATUS_KEY_NOT_FOUND) {
-        // isshe 2017.06.03
-
-        // TODO switch src/dst order
-        /*
-        struct in_addr addr_temp = ap.src;
-        ap.src = ap.dst;
-        ap.dst = addr_temp;
-
-        unsigned short int port_temp = ap.src_port;
-        ap.src_port = ap.dst_port;
-        ap.dst_port = port_temp;
-        */
-
-        addr_pair ap2;
-
-        ap2.src = ap.dst;
-        ap2.dst = ap.src;
-        ap2.src_port = ap.dst_port;
-        ap2.dst_port = ap.src_port;
-        ap2.protocol = ap.protocol;
-
-        // search again
-        if (hash_find(history, &ap2, u_ht.void_pp) == HASH_STATUS_KEY_NOT_FOUND) {
-            // both ordering are not in the history hash table
-            ht = history_create();
-    	    hash_insert(history, &ap, ht);
-            order = NOTSWITCH;
-        } else { order = SWITCH; }
-
-    } else { order = NOTSWITCH; }
+        ht = history_create();
+        hash_insert(history, &ap, ht);
+    }
 
     /* Do accounting. */
     len = ntohs(iptr->ip_len);
@@ -583,26 +555,13 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
     //printf("we have updated the record!\n");
     //--------------------------------------------
 
-    // TODO switch order
-    if (order == NOTSWITCH) {
-        if (iptr->ip_src.s_addr == ap.src.s_addr) {
-            //ht->sent[history_pos] += len;
-            ht->total_sent += len;
-        }
-        else {
-            //ht->recv[history_pos] += len;
-            ht->total_recv += len;
-        }
-
-    } else {
-        if (iptr->ip_src.s_addr == ap.src.s_addr) {
-            //ht->sent[history_pos] += len;
-            ht->total_recv += len;
-        }
-        else {
-            //ht->recv[history_pos] += len;
-            ht->total_sent += len;
-        }
+    if (iptr->ip_src.s_addr == ap.src.s_addr) {
+        //ht->sent[history_pos] += len;
+        ht->total_sent += len;
+    }
+    else {
+        //ht->recv[history_pos] += len;
+        ht->total_recv += len;
     }
 
     /* add to total recv/send stats */

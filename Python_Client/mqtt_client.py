@@ -22,7 +22,7 @@ def on_message(client, userdata, msg):
     decompressed_message = zlib.decompress(msg.payload)
     
     #print(msg.topic+" "+str(msg.payload))
-    struct_size = struct.calcsize('=LHLHHQQ')
+    struct_size = struct.calcsize('=LHLHHQQLL')
     print len(decompressed_message)
     print "total: ",len(decompressed_message)/struct_size
 
@@ -30,7 +30,7 @@ def on_message(client, userdata, msg):
     
     # for i in range(0, len(data), 4):
     #s = struct.Struct('=ilqL')
-    s = struct.Struct('=LHLHHQQ')
+    s = struct.Struct('=LHLHHQQLL')
     
     for i in range(0, len(decompressed_message), struct_size):
     #pos = struct.unpack('i', data[i:i+4])

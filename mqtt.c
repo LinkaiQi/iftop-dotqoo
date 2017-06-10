@@ -83,7 +83,7 @@ void init_MQTT() {
     //MQTTClient_message pubmsg = MQTTClient_message_initializer;
     //pubmsg = MQTTClient_message_initializer;
     //MQTTClient_deliveryToken token;
-    struct_size = sizeof(long)*2 + sizeof(short int)*3 + sizeof(unsigned long long)*2;
+    struct_size = sizeof(long)*2 + sizeof(short int)*3 + sizeof(unsigned long long)*2 + sizeof(time_t)*2;
 
     // initalize status
     status = MQTT_STATUS_INIT;
@@ -215,6 +215,11 @@ int construct_MQTT_msg(int n, hash_type* history) {
             current += sizeof(unsigned long long);
             memcpy(current, &(stat->total_recv), sizeof(unsigned long long));
             current += sizeof(unsigned long long);
+            // add timestamp
+            memcpy(current, &(stat->create_time), sizeof(time_t));
+            current += sizeof(time_t);
+            memcpy(current, &(stat->last_update_time), sizeof(time_t));
+            current += sizeof(time_t);
         }
 
         node = next;
