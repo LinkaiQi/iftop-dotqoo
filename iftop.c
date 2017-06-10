@@ -530,11 +530,27 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
           break;
     }
     */
-
 	//printf("src port = %d, dst port = %d\n", ap.src_port, ap.dst_port);
 
-	//isshe
-    /* drop the pkt if it in the port list */
+    /* isshe 2017.06.10
+     * drop the pkt if the src ip address is 172.16.64.31 (router)
+     * Router <-> Server (outer net)
+     */
+    if (ap.src.s_addr == ROUTER_ADDR) {
+        return;
+    }
+
+    /* isshe 2017.06.10
+     * ajust all Dynamic Ports number to the same number (50000)
+     * port number range From 49152 to 65535
+     */
+    if (ap.dst_port >= 49152 || ap.dst_port <= 65535) {
+        ap.dst_port = 50000;
+    }
+
+	/* isshe
+     * drop the pkt if it in the port list
+     */
 	if (in_port_list(port_list, PORT_LIST_LEN, ap.src_port)
         || in_port_list(port_list, PORT_LIST_LEN, ap.dst_port)) {
         return;

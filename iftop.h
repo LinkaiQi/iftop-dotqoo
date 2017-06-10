@@ -24,6 +24,9 @@
 #define SWITCH		1
 #define NOTSWITCH 	0
 
+//2017.06.10
+#define ROUTER_ADDR 2886746143u	// Integer IP of 172.16.64.31
+
 
 /* At least OpenBSD and NexentaCore do not
  * define s6_addr32 for user land settings.
