@@ -242,13 +242,13 @@ void tick(int send) {
     t = time(NULL);
     if(t - last_timestamp >= RESOLUTION || send) {
         // analyse_data();
-        print_all_history();
+        // print_all_history();
 
         // delete unsatisfied entries ---------
         size = history_rotate(t);
         // isshe 2017.05.31
         // check whether need to send info over MQTT
-        if (options.send_interval!= 0 && ((t - options.send_last) > options.send_interval || send)) {
+        if ((options.send_interval!= 0 && (t - options.send_last) > options.send_interval) || send) {
             options.send_last = t;
             printf(" >>> Sending data (MQTT)\n");
             if (!construct_MQTT_msg(size, history)) {
@@ -263,8 +263,7 @@ void tick(int send) {
     }
 
     // isshe 2017.05.31
-    if (options.send_interval!= 0)
-        check_status();
+    check_status();
 
     pthread_mutex_unlock(&tick_mutex);
 
@@ -541,11 +540,11 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
     }
 
     /* isshe 2017.06.10
-     * ajust all Dynamic Ports number to the same number (50000)
+     * ajust all Dynamic Ports number to the same number 'Zero'
      * port number range From 49152 to 65535
      */
     if (ap.dst_port >= 49152 || ap.dst_port <= 65535) {
-        ap.dst_port = 50000;
+        ap.dst_port = 0;
     }
 
 	/* isshe
@@ -998,9 +997,7 @@ int main(int argc, char **argv) {
 
     // isshe 2017.05.31 --------------
     // init MQTT
-    if (options.send_interval != 0) {
-        init_MQTT();
-    }
+    init_MQTT();
     // -------------------------------
 
     //if (options.no_curses) {
@@ -1041,8 +1038,7 @@ int main(int argc, char **argv) {
     free(options.block_protocols);
     // isshe 2017.05.31
     // disconnect & destory MQTT
-    if (options.send_interval != 0)
-        destory_MQTT();
+    destory_MQTT();
     // free history hash table
     hash_destroy(history);
     // -------------------------------
