@@ -89,8 +89,8 @@ void init_MQTT() {
     status = MQTT_STATUS_INIT;
     connection = MQTT_CONNECT_OFF;
     // get device ID
-    //get_device_id();
-    strcpy(id, "123456");
+    get_device_id();
+    // strcpy(id, "123456");
     // construct topic
     construct_topic();
 
@@ -117,10 +117,12 @@ void check_MQTT_connection(time_t t) {
 int connect_and_subscribe() {
     int rc;
     // connect to broker
+    printf("Connecting ... (MQTT)\n");
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);
         return 1;
     }
+    printf("Connection established! (MQTT)\n");
     // subscribe the client to a topic
     MQTTClient_subscribe(client, BROADCST, QOS);
     MQTTClient_subscribe(client, my_retrieve_topic, QOS);
@@ -276,6 +278,8 @@ void send_MQTT_msg() {
     pubmsg.qos = QOS;
     pubmsg.retained = 0;
     deliveredtoken = 0;
+
+    printf(" >>> Sending data (MQTT)\n");
 
     MQTTClient_publishMessage(client, my_send_topic, &pubmsg, &token);
     printf(" Waiting for publication "

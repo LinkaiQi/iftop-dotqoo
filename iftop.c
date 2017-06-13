@@ -250,7 +250,6 @@ void tick(int send) {
         // check whether need to send info over MQTT
         if ((options.send_interval!= 0 && (t - options.send_last) > options.send_interval) || send) {
             options.send_last = t;
-            printf(" >>> Sending data (MQTT)\n");
             if (!construct_MQTT_msg(size, history)) {
                 msg_ready = 1;
             }
@@ -380,6 +379,7 @@ int is_control_block_pkt(struct ip* iptr) {
     //printf("%lu %lu\n", iptr->ip_src.s_addr, iptr->ip_dst.s_addr);
     return 0;
 }
+
 
 static void handle_ip_packet(struct ip* iptr, int hw_dir)
 {
