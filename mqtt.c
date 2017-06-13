@@ -117,7 +117,7 @@ void check_MQTT_connection(time_t t) {
 int connect_and_subscribe() {
     int rc;
     // connect to broker
-    printf("Connecting ... (MQTT)\n");
+    printf("Connecting... (MQTT)\n");
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to connect, return code %d\n", rc);
         return 1;
@@ -135,6 +135,7 @@ void get_device_id() {
     FILE *fp;
     //char id[32];
     int n_id;
+    char *pos;
 
     /* Open the command for reading. */
     fp = popen("/bin/boxid", "r");
@@ -149,6 +150,10 @@ void get_device_id() {
     if (fgets(id, sizeof(id), fp) == NULL) {
         printf("Failed to read command 'boxid' output\n" );
         exit(1);
+    }
+    // remove '\n' character
+    if ((pos=strchr(Name, '\n')) != NULL) {
+        *pos = '\0';
     }
     /* close */
     pclose(fp);
