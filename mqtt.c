@@ -152,7 +152,7 @@ void get_device_id() {
         exit(1);
     }
     // remove '\n' character
-    if ((pos=strchr(Name, '\n')) != NULL) {
+    if ((pos=strchr(id, '\n')) != NULL) {
         *pos = '\0';
     }
     /* close */
