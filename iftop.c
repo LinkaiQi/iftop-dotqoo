@@ -264,13 +264,13 @@ void tick(int send) {
     // isshe 2017.05.31
     check_status();
 
-    pthread_mutex_unlock(&tick_mutex);
-
     // isshe 2017.05.31
     if (msg_ready) {
-        send_MQTT_msg();
         msg_ready = 0;
+        send_MQTT_msg();
     }
+
+    pthread_mutex_unlock(&tick_mutex);
 }
 
 

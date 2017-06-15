@@ -116,6 +116,12 @@ void check_MQTT_connection(time_t t) {
 
 int connect_and_subscribe() {
     int rc;
+
+    if (status == MQTT_STATUS_PENDING) {
+        free(data)
+        status = MQTT_STATUS_INIT
+    }
+
     // connect to broker
     printf("Connecting... (MQTT)\n");
     if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS) {
@@ -184,10 +190,10 @@ int construct_MQTT_msg(int n, hash_type* history) {
     }
     // allocate string data
     data = (unsigned char *)calloc(1, struct_size * n);
-    unsigned char *current = data;
     // change status
     status = MQTT_STATUS_PENDING;
 
+    unsigned char *current = data;
     // go through the history hash table
     hash_next_item(history, &node);
     while(node != NULL) {
