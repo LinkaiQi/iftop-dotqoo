@@ -118,8 +118,8 @@ int connect_and_subscribe() {
     int rc;
 
     if (status == MQTT_STATUS_PENDING) {
-        free(data)
-        status = MQTT_STATUS_INIT
+        free(data);
+        status = MQTT_STATUS_INIT;
     }
 
     // connect to broker

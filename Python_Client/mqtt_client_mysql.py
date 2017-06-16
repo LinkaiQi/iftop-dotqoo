@@ -7,6 +7,7 @@ import time
 import socket
 import argparse
 import datetime
+import mysql.connector
 
 options = {}
 table = {}
@@ -16,6 +17,10 @@ stat = {}
 STRUCT_TYPE = '=LHLHHQQLL'
 STRUCT_SIZE = struct.calcsize(STRUCT_TYPE)
 received = 0
+# mysql
+cnx = None
+cur = None
+
 
 
 def loop():
@@ -166,6 +171,15 @@ def print_stat():
                     protocols += "IGMP/"
             print protocols[:-1]
 
+            print  "  ", conn[0], '  '
+
+            # solve hostname from database
+            cur.execute(query_ip_host_pair%(16777216), ())
+
+            for (hostname) in cur:
+                print(hostname)
+
+
 
 
 def read_arg():
@@ -204,6 +218,17 @@ client.connect("test.mosquitto.org", 1883, 60)
 # manual interface.
 
 thread.start_new_thread(loop, ())
+
+# mysql
+try:
+    # Connect with the MySQL Server
+    cnx = mysql.connector.connect(user='root', database='network_traffic', password='QLK8812c')
+    # Get two buffered cursors
+    cur = cnx.cursor(buffered=True)
+except Exception as e:
+    print "Cannot connect to local mysql database"
+
+query_ip_host_pair = "SELECT hostname FROM ip_hostname WHERE ip = %d"
 
 time.sleep(3)
 print_options()
@@ -245,5 +270,12 @@ while True:
 
     else:
         print "Invalid input"
+
+# close mysql
+if cnx != None:
+    cur.close()
+    cnx.close()
+
+
 
 # end
