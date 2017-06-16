@@ -73,6 +73,7 @@ void connlost(void *context, char *cause) {
     printf("     cause: %s\n", cause);
     connection = MQTT_CONNECT_OFF;
     // try to reconnect
+    last_try = time(NULL);
     connect_and_subscribe();
 }
 
@@ -281,6 +282,14 @@ void compress_msg(/* arguments */) {
 
 
 void send_MQTT_msg() {
+    if (connection == MQTT_CONNECT_OFF) {
+        status = MQTT_STATUS_COMPLETE;
+        free(data);
+        free(out);
+        printf("return send_MQTT_msg\n");
+        return;
+    }
+
     MQTTClient_message pubmsg = MQTTClient_message_initializer;
     //MQTTClient_deliveryToken token;
 
@@ -304,10 +313,10 @@ void check_status() {
     if (deliveredtoken == token) {          // msg sent successful
         deliveredtoken = 0;
         // change status
-        status = MQTT_STATUS_COMPLETE;
-        // free string data buffer
         free(data);
         free(out);
+        // change status
+        status = MQTT_STATUS_COMPLETE;
         printf(" Data sent successful\n\n");
     }
 }

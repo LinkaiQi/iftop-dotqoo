@@ -22,7 +22,7 @@
  /* set the reconnect internal to 10 mins
   * if the connection is lost, we will try to reconnect to the broker
   * in the next 10 mins */
- #define RECONNECT_INTERVAL 600
+ #define RECONNECT_INTERVAL 120
 
 
 // mqtt client status

@@ -182,8 +182,8 @@ int history_rotate(time_t t) {
 
         if (!d->approval) {
             if (is_short_connection(d, t) || is_low_traffic_connection(d, t)) {
-                printf("Delete a history record!!!!\n");
-                printf("Delete a history record!!!!\n");
+                // printf("Delete a history record!!!!\n");
+                // printf("Delete a history record!!!!\n");
                 addr_pair key = *(addr_pair*)(n->key);
                 hash_delete(history, &key);
                 free(d);
@@ -239,6 +239,7 @@ void tick(int send) {
 
     pthread_mutex_lock(&tick_mutex);
 
+    msg_ready = 0;
     t = time(NULL);
     if(t - last_timestamp >= RESOLUTION || send) {
         // analyse_data();
@@ -257,20 +258,20 @@ void tick(int send) {
         // check MQTT connection
         check_MQTT_connection(t);
 
+        // isshe 2017.05.31
+        if (msg_ready) {
+            msg_ready = 0;
+            send_MQTT_msg();
+        }
+
         last_timestamp = t;
 
     }
 
+    pthread_mutex_unlock(&tick_mutex);
+
     // isshe 2017.05.31
     check_status();
-
-    // isshe 2017.05.31
-    if (msg_ready) {
-        msg_ready = 0;
-        send_MQTT_msg();
-    }
-
-    pthread_mutex_unlock(&tick_mutex);
 }
 
 
