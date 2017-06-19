@@ -57,3 +57,4 @@ iftop
 Makefile
 
 *.Po
+*.dat
