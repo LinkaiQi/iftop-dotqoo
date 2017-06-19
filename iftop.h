@@ -11,7 +11,7 @@
 
 /* 40 / 2  */
 #define HISTORY_LENGTH  20
-#define RESOLUTION 2
+#define RESOLUTION 4
 #define DUMP_RESOLUTION 300
 
 //2017.01.21
@@ -52,7 +52,7 @@ typedef struct {
     //int last_write;
 } history_type;
 
-void tick(int send);
+void tick(int send, time_t t);
 
 void *xmalloc(size_t n);
 void *xcalloc(size_t n, size_t m);

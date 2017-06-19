@@ -106,19 +106,20 @@ typedef struct {
 	int write_interval; 			//write file interval
 
     //2017.05.23-isshe
-    //--------------------------------------------------------------------------
-    int control_block_filter;       /* ignore IP addresses in 224.0.0/24 224.0.1/24
-                                     * 127.0.0.1 255.255.255.255 range
-                                     */
+    //------------------------------------------------------
+    //int control_block_filter;
+           /* ignore IP addresses in 224.0.0/24 224.0.1/24
+            * 127.0.0.1 255.255.255.255 range
+            */
     int duration;
 
-    int num_of_block_protocols;
-    int *block_protocols;
+    int block_protocols[32];
 
     //2017.05.30-isshe
     int send_interval;
     time_t send_last;
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------
+    char *mqtt_addr;
 
 } options_t;
 

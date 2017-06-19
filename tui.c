@@ -15,6 +15,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 
 #if defined(HAVE_TERMIOS_H)
 #include <termios.h>
@@ -92,122 +93,8 @@ void loop() {
   while ((i = getchar()) != 'q' && foad == 0) {
     switch (i) {
       case 'u':
-        tick(0);
+        tick(0, time(NULL));
         break;
-      /*
-      case 'n':
-        options.dnsresolution ^= 1;
-        printf("DNS resolution is %s.\n\n", options.dnsresolution ? "ON" : "OFF");
-        tick(1);
-        break;
-      case 'N':
-        options.portresolution ^= 1;
-        printf("Port resolution is %s.\n\n", options.portresolution ? "ON" : "OFF");
-        tick(1);
-        break;
-      case 's':
-        options.aggregate_src ^= 1;
-        printf("%s source host\n\n", options.aggregate_src ? "Hide" : "Show");
-        tick(1);
-        break;
-      case 'd':
-        options.aggregate_dest ^= 1;
-        printf("%s destination host\n\n", options.aggregate_dest ? "Hide" : "Show");
-        tick(1);
-        break;
-      case 'S':
-        if (options.showports == OPTION_PORTS_OFF) {
-          options.showports = OPTION_PORTS_SRC;
-        }
-        else if (options.showports == OPTION_PORTS_DEST) {
-          options.showports = OPTION_PORTS_ON;
-        }
-        else if(options.showports == OPTION_PORTS_ON) {
-          options.showports = OPTION_PORTS_DEST;
-        }
-        else {
-          options.showports = OPTION_PORTS_OFF;
-        }
-        printf("Showing ports:%s%s%s%s.\n\n",
-          options.showports == OPTION_PORTS_SRC ? " src" : "",
-          options.showports == OPTION_PORTS_DEST ? " dest" : "",
-          options.showports == OPTION_PORTS_ON ? " both" : "",
-          options.showports == OPTION_PORTS_OFF ? " none" : "");
-        tick(1);
-        break;
-      case 'D':
-        if (options.showports == OPTION_PORTS_OFF) {
-          options.showports = OPTION_PORTS_DEST;
-        }
-        else if (options.showports == OPTION_PORTS_SRC) {
-          options.showports = OPTION_PORTS_ON;
-        }
-        else if(options.showports == OPTION_PORTS_ON) {
-          options.showports = OPTION_PORTS_SRC;
-        }
-        else {
-          options.showports = OPTION_PORTS_OFF;
-        }
-        printf("Showing ports:%s%s%s%s.\n\n",
-          options.showports == OPTION_PORTS_SRC ? " src" : "",
-          options.showports == OPTION_PORTS_DEST ? " dest" : "",
-          options.showports == OPTION_PORTS_ON ? " both" : "",
-          options.showports == OPTION_PORTS_OFF ? " none" : "");
-        tick(1);
-        break;
-      case 'p':
-        options.showports =
-         (options.showports == OPTION_PORTS_OFF) ?
-          OPTION_PORTS_ON :
-          OPTION_PORTS_OFF;
-        printf("Showing ports:%s%s%s%s.\n\n",
-          options.showports == OPTION_PORTS_SRC ? " src" : "",
-          options.showports == OPTION_PORTS_DEST ? " dest" : "",
-          options.showports == OPTION_PORTS_ON ? " both" : "",
-          options.showports == OPTION_PORTS_OFF ? " none" : "");
-        tick(1);
-        break;
-      case 'P':
-        options.paused ^= 1;
-        if (options.paused) {
-          printf("Pausing... press 'P' again to continue.\n");
-        }
-	    else {
-	      printf("Continuing.\n\n");
-	      tick(1);
-	    }
-	    break;
-      case 'o':
-        options.freezeorder ^= 1;
-        printf("Order %s.\n\n", options.freezeorder ? "frozen" : "unfrozen");
-	    tick(1);
-	    break;
-      case '1':
-        options.sort = OPTION_SORT_DIV1;
-        printf("Sorting by column 1.\n\n");
-	    tick(1);
-        break;
-      case '2':
-        options.sort = OPTION_SORT_DIV2;
-        printf("Sorting by column 2.\n\n");
-        tick(1);
-        break;
-      case '3':
-        options.sort = OPTION_SORT_DIV3;
-        printf("Sorting by column 3.\n\n");
-        tick(1);
-        break;
-      case '<':
-        options.sort = OPTION_SORT_SRC;
-        printf("Sorting by column source.\n\n");
-        tick(1);
-        break;
-      case '>':
-        options.sort = OPTION_SORT_DEST;
-        printf("Sorting by column destination.\n\n");
-        tick(1);
-        break;
-      */
       default:
         break;
     }

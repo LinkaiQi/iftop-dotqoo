@@ -1,0 +1,38 @@
+
+# Promiscuous mode (Default OFF)
+ -p
+
+# Listen on named Interface (Default eth0)
+ -i eth0
+         
+# Show traffic flows in/out of IPv4 network\n
+# -F net/mask
+
+# Ports to ignore (Default None) 
+ -P 80,22
+
+# Time interval of send connection info over MQTT (Default OFF)
+ -M 1
+
+# Drop connection when no package send/recv within d seconds 
+# after the connection has been created (Default OFF)
+ -d 60
+
+
+# Block the protocol types which follow by Z (Default OFF)
+# protocol type number can find at wikipedia.org: List_of_IP_protocol_numbers
+ -Z 1,2
+
+
+# When a connection is established, if the connection’s transmission flow cannot
+# exceed T bytes within t seconds, drop the connection from history record
+ -T 300
+ -t 60
+
+# MQTT Broker protocol/address/port
+-B tcp://test.mosquitto.org:1883
+
+
+
+
+

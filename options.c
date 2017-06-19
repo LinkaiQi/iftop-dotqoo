@@ -36,10 +36,15 @@ options_t options;
 //extern long threshold;
 extern int port_list[PORT_LIST_LEN]; 		//iftop.c defined
 
+//2017.06.19 isshe
+//options_args read from input file
+int fargc = 1;
+char *fargv[32];
 
 //char optstr[] = "+i:f:nNF:G:lhpbBPm:c:s:tL:o:";
 //char optstr[] = "+i:f:nNF:G:lhpbBPm:c:s:tL:o:SWZ:T:Y:X:qD:z:M:";
-char optstr[] = "+i:f:F:G:hpSWZ:T:Y:X:qD:z:M:";
+//char optstr[] = "+i:f:F:G:hpSWZ:T:Y:X:qD:z:M:";
+char optstr[] = "+i:f:F:P:M:d:Z:t:T:B:hp";
 
 /* Global options. */
 
@@ -125,6 +130,7 @@ static char *get_first_interface(void) {
 
 void options_set_defaults() {
     char *s;
+    int i;
     /* Should go through the list of interfaces, and find the first one which
      * is up and is not lo or dummy*. */
     options.interface = get_first_interface();
@@ -185,19 +191,27 @@ void options_set_defaults() {
 	options.write_interval = 2; 			//write file interval
 
     //2017.05.23-isshe
-    //--------------------------------------------------------------------------
-    options.control_block_filter = 0; /* ignore IP addresses in 224.0.0/24 224.0.1/24
-                                       * 127.0.0.1 255.255.255.255 range
-                                       */
+    //-----------------------------------------------------------
+    //options.control_block_filter = 0;
+        /* ignore IP addresses in 224.0.0/24 224.0.1/24
+         * 127.0.0.1 255.255.255.255 range
+         */
     options.duration = 0;
 
-    options.num_of_block_protocols = 0;
-    options.block_protocols = (int*)calloc(32, sizeof(int));
+    //options.num_of_block_protocols = 0;
+    //options.block_protocols = (int*)calloc(32, sizeof(int));
+    for (i = 0; i < 32; i++) {
+        options.block_protocols[i] = -1;
+    }
 
     //2017.05.30-isshe
     options.send_interval = 0;
     options.send_last = time(NULL);
-    //--------------------------------------------------------------------------
+    //------------------------------------------------------------
+    //2017.06.19-isshe
+    options.mqtt_addr = (char*)malloc(sizeof(char)*64);
+    strcpy(options.mqtt_addr, "tcp://test.mosquitto.org:1883");
+    //------------------------------------------------------------
 
     /* Figure out the name for the config file */
     s = getenv("HOME");
@@ -219,61 +233,92 @@ static void usage(FILE *fp) {
     fprintf(fp,
 "iftop: display bandwidth usage on an interface by host\n"
 "\n"
-"Synopsis: iftop -h | [-q] [-T seconds] [-Y Bytes]\n"
-"                     [-D seconds] [-M mins]\n"
+"Synopsis: iftop -h | [-p] [-t seconds] [-T bytes]\n"
+"                     [-d seconds] [-M mins]\n"
 "\n"
 "   iftop:\n"
 "   -----------------------------------------------------------------------\n"
 "   -h                  display this message\n"
-//"   -n                  don't do hostname lookups\n"
-//"   -N                  don't convert port numbers to services\n"
+
 "   -p                  run in promiscuous mode (show traffic between other\n"
 "                       hosts on the same network segment)\n"
-//"   -b                  don't display a bar graph of traffic\n"
-//"   -B                  Display bandwidth in bytes\n"
 "   -i interface        listen on named interface\n"
 "   -f filter code      use filter code to select packets to count\n"
 "                       (default: none, but only IP packets are counted)\n"
 "   -F net/mask         show traffic flows in/out of IPv4 network\n"
-//"   -G net6/mask6       show traffic flows in/out of IPv6 network\n"
-//"   -l                  display and count link-local IPv6 traffic (default: off)\n"
-//"   -P                  show ports as well as hosts\n"
-//"   -m limit            sets the upper limit for the bandwidth scale\n"
-//"   -c config file      specifies an alternative configuration file\n"
-//"   -t                  use text interface without ncurses\n"
-//"\n"
-//"   Sorting orders:\n"
-//"   -o 2s                Sort by first column (2s traffic average)\n"
-//"   -o 10s               Sort by second column (10s traffic average) [default]\n"
-//"   -o 40s               Sort by third column (40s traffic average)\n"
-//"   -o source            Sort by source address\n"
-//"   -o destination       Sort by destination address\n"
-//"\n"
-//"   The following options are only available in combination with -t\n"
-//"   -s num              print one single text output afer num seconds, then quit\n"
-//"   -L num              number of lines to print\n"
+
 "\n"
 "   dotqoo:\n"
 "   -----------------------------------------------------------------------\n"
-"   -Z port,port...     filter port\n"
-"   -W                  write info to file(/tmp)\n"
-"   -Y seconds          delete info interval\n"
-"   -T threshold        drop info when info_len less than threshold(bytes)\n"
-"   -S                  send info to socket\n"
-"   -X seconds          write info to file interval\n"
-"   -q                  ignore control block pkt\n"
+"   -P port,port...     port filter\n"
 "   -M mins             time interval of send connection info over MQTT\n"
-"   -D seconds          drop the info when no pkt send/recv within -D sec\n"
+"   -d seconds          drop connection when no pkt send/recv within -d sec\n"
 "                       after the connection has been created\n"
-"   -z ip_p,ip_p...     block the protocol types which follow by '-z'\n"
+"   -Z ip_p,ip_p...     block the protocol types which follow by '-z'\n"
 "                       protocol type number can find at\n"
-"                       wikipedia.org: 'List_of_IP_protocol_numbers'\n"
+"                       wikipedia.org: 'List_of_IP_protocol_numbers'\n\n"
+
+"   -t seconds          clear connection-info interval\n"
+"   -T threshold        drop the connection when its transmission flow\n"
+"                       is less than threshold(bytes)\n"
 
 "\n"
 "iftop, modified by dotqoo from version: " PACKAGE_VERSION "\n"
 "copyright (c) 2002 Paul Warren <pdw@ex-parrot.com> and contributors\n"
             );
 }
+
+
+int read_args_from_file(/* arguments */) {
+    int i = 0;
+    FILE *fp;
+    char *pos, *arg, buff[255], args[255];
+    char delim[] = " ";
+
+    fp = fopen("./options_args.txt", "r");
+    if (!fp) {
+        printf("cannot find input 'options_args' file, running at default setting\n");
+        return 1;
+    }
+
+    while (fgets(buff, 255, (FILE*)fp)) {
+        if (buff[0] != '#' && buff[0] != '\n') {
+            /* remove '\n' character */
+            if ((pos=strchr(buff, '\n')) != NULL) {
+                *pos = '\0';
+            }
+
+            strcpy(args+i, buff);
+            i += strlen(buff);
+            strcpy(args+i, " ");
+            i++;
+        }
+    }
+
+    // save args to global variable 'fargc' and 'fargv'
+    if (((arg = strtok(args, delim)) != NULL)) {
+        fargv[fargc] = (char*)malloc(sizeof(char)*64);
+        strcpy(fargv[fargc], arg);
+        fargc++;
+    }
+    while ((arg = strtok(NULL, delim)) != NULL) {
+        fargv[fargc] = (char*)malloc(sizeof(char)*64);
+        strcpy(fargv[fargc], arg);
+        fargc++;
+    }
+
+
+    printf("size: %d\n", fargc);
+    for (i = 0; i < fargc; i++) {
+        printf("%s|", fargv[i]);
+    }
+    printf("\n");
+
+
+    fclose(fp);
+    return 0;
+}
+
 
 void options_read_args(int argc, char **argv) {
     int opt;
@@ -293,6 +338,14 @@ void options_read_args(int argc, char **argv) {
     // and make sure always use text interface
     config_set_string("no-curses", "true");
     //--------------------------------------------------
+
+    // 2017.06.19-isshe
+    // if a input args file exist, apply the args file first
+    if (!read_args_from_file()) {
+        printf("-> input args read from 'options_args.txt'\n");
+        argc = fargc;
+        argv = fargv;
+    }
 
     while ((opt = getopt(argc, argv, optstr)) != -1) {
         switch (opt) {
@@ -316,59 +369,13 @@ void options_read_args(int argc, char **argv) {
                 config_set_string("filter-code", optarg);
                 break;
 
-            //case 'l':
-            //    config_set_string("link-local", "true");
-            //    break;
-
             case 'p':
                 config_set_string("promiscuous", "true");
                 break;
 
-            //case 'P':
-            //    config_set_string("port-display", "on");
-            //    break;
-
             case 'F':
                 config_set_string("net-filter", optarg);
                 break;
-
-            case 'G':
-                config_set_string("net-filter6", optarg);
-                break;
-
-            //case 'm':
-            //    config_set_string("max-bandwidth", optarg);
-            //    break;
-
-            //case 'b':
-            //    config_set_string("show-bars", "false");
-            //    break;
-
-            //case 'B':
-            //    config_set_string("use-bytes", "true");
-            //    break;
-
-            //case 's':
-            //    config_set_string("timed-output", optarg);
-            //    break;
-
-            //case 't':
-            //    config_set_string("no-curses", "true");
-            //    break;
-
-            //case 'L':
-            //    config_set_string("num-lines", optarg);
-            //    break;
-
-            //case 'o':
-            //    config_set_string("sort", optarg);
-            //    break;
-
-            //case 'c':
-            //    xfree(options.config_file);
-            //    options.config_file = xstrdup(optarg);
-            //    options.config_file_specified = 1;
-            //    break;
 
             case '?':
                 fprintf(stderr, "iftop: unknown option -%c\n", optopt);
@@ -381,26 +388,23 @@ void options_read_args(int argc, char **argv) {
                 exit(1);
 
 			//2017.01.21-isshe
-			case 'Z':
-
-				//��ʼ��Ϊ-1��PORT_LIST_LEN����Ϊ10����9���˿�
+			case 'P':
 				for (i = 0; i < PORT_LIST_LEN; i++)
 				{
 					port_list[i] = -1;
 				}
 
-				//��һ���˿�
 				port_list[0] = atoi(strtok(optarg,delim));
-				printf("port: %d\n", port_list[0]);
+				printf("* Ignore ports: %d", port_list[0]);
 
-				//����
 				for(i = 1; (p = strtok(NULL, delim)) != NULL; i++)
 				{
 					port_list[i] = atoi(p);
-					printf("port: %d\n", port_list[i]);
+					printf("%d", port_list[i]);
 				}
+                printf("\n");
 				break;
-
+            /*
 			case 'W':
 				options.write_communication_info = 1;
 				break;
@@ -408,44 +412,40 @@ void options_read_args(int argc, char **argv) {
 			case 'S':
 				options.send_communication_info = 1;
 				break;
+            */
+
+			case 't':
+				options.history_delete_interval = atol(optarg);
+				printf("* Clear connection-info interval = %ld secs\n", options.history_delete_interval);
+				break;
 
 			case 'T':
-				options.history_delete_interval = atol(optarg);
-				printf("history_delete_interval = %ld\n", options.history_delete_interval);
+				options.threshold = atol(optarg);
+				printf("* Threshold = %ld\n", options.threshold);
 				break;
 
-			case 'Y':
-				options.threshold = atol(optarg);
-				printf("threshold = %ld\n", options.threshold);
-				break;
+            /*
 			case 'X':
 				options.write_interval = atoi(optarg);
 				printf("write_interval = %d\n", options.write_interval);
-				options.write_communication_info = 1; 		//�����˼��������Զ���д�ļ�ģʽ
+				options.write_communication_info = 1;
 				break;
+            */
 
             //2017.05.24-isshe
             //------------------------------------------------------------------
-            case 'q':
-                printf("Control Block filter is on\n");
-                options.control_block_filter = 1;
-                break;
-
-            case 'D':
-                printf("Pkt duration filter is on\n");
-                printf("duration = %s seconds\n", optarg);
+            case 'd':
+                printf("* Pkt duration filter is on\n");
+                printf("  connection lowest duration = %s secs\n", optarg);
                 options.duration = atoi(optarg);
                 break;
 
-            case 'z':
-                options.num_of_block_protocols += 1;
+            case 'Z':
                 options.block_protocols[0] = atoi(strtok(optarg, delim));
                 //printf("ip_p: %d\n", options.block_protocols[0]);
 
-                for(i = 1; (ip_p = strtok(NULL, delim)) != NULL; i++)
-				{
+                for(i = 1; (ip_p = strtok(NULL, delim)) != NULL; i++) {
 					options.block_protocols[i] = atoi(ip_p);
-                    options.num_of_block_protocols += 1;
 					//printf("ip_p: %d\n", options.block_protocols[i]);
 				}
                 //printf("num_of_block_protocols: %d\n", options.num_of_block_protocols);
@@ -453,9 +453,14 @@ void options_read_args(int argc, char **argv) {
 
             //2017.05.30-isshe
             case 'M':
-                printf("send data intervl (MQTT) = %s mins\n", optarg);
+                printf("* Auto send data interval (MQTT) = %s mins\n", optarg);
                 options.send_interval = atoi(optarg) * 60;
             //------------------------------------------------------------------
+
+            case 'B':
+                printf("* Broker address: %s\n",options.mqtt_addr);
+                strcpy(options.mqtt_addr, optarg);
+
         }
     }
 

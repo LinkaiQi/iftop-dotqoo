@@ -16,6 +16,9 @@
 #include "hash.h"
 #include "iftop.h"
 #include "addr_hash.h"
+#include "options.h"
+
+extern options_t options;
 
 MQTTClient client;
 MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
@@ -63,7 +66,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
     // Call tick send MQTT msg
-    tick(1);
+    tick(1, time(NULL));
     return 1;
 }
 
@@ -95,7 +98,7 @@ void init_MQTT() {
     // construct topic
     construct_topic();
 
-    MQTTClient_create(&client, ADDRESS, id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
+    MQTTClient_create(&client, options.mqtt_addr, id, MQTTCLIENT_PERSISTENCE_NONE, NULL);
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
     // set call backs (Asynchronous)
@@ -186,7 +189,11 @@ int construct_MQTT_msg(int n, hash_type* history) {
     hash_node_type* node = NULL;
     //int struct_size = sizeof(long)*2 + sizeof(short int)*3 + sizeof(unsigned long long)*2;
     if (status == MQTT_STATUS_PENDING || connection == MQTT_CONNECT_OFF) {
-        printf("return construct_MQTT_msg\n");
+        printf("A msg is pending OR mqtt connection is lost\n");
+        return 1;
+    }
+    if (n == 0) {
+        printf("No connection history to send\n");
         return 1;
     }
     // allocate string data

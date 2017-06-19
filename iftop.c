@@ -111,8 +111,12 @@ static void finish(int sig) {
 /* IEEE 802.11 radiotap throws in a variable length header plus 8 (radiotap
  * header header) plus 34 (802.11 MAC) plus 40 (IPv6) = 78, plus whatever's in
  * the radiotap payload */
-/*#define CAPTURE_LENGTH 92 */
-#define CAPTURE_LENGTH 256
+/* #define CAPTURE_LENGTH 92 */
+/* #define CAPTURE_LENGTH 256 */
+
+/* Only need ethernet (plus optional 4 byte VLAN) and IP headers (48) + first 2
+ * bytes of tcp/udp header */
+#define CAPTURE_LENGTH 72
 
 void init_history() {
     history = addr_hash_create();
@@ -233,15 +237,13 @@ int history_rotate(time_t t) {
 }
 
 
-void tick(int send) {
-    time_t t;
+void tick(int send, time_t t) {
     int size;
 
     pthread_mutex_lock(&tick_mutex);
 
     msg_ready = 0;
-    t = time(NULL);
-    if(t - last_timestamp >= RESOLUTION || send) {
+    if(send || t - last_timestamp >= RESOLUTION) {
         // analyse_data();
         // print_all_history();
 
@@ -357,31 +359,6 @@ void assign_addr_pair(addr_pair* ap, struct ip* iptr, int flip) { 		//flip:ï¿½ï¿
 }
 
 
-/* isshe 2017.05.27
- * if the control block filter is on, test on the packet whether in the
- * control block ip address address
- */
-int is_control_block_pkt(struct ip* iptr) {
-    // filter 224.0.0/24 224.0.1/24
-    if ((iptr->ip_src.s_addr & 0xFFFF) == 0xE0 && !(iptr->ip_src.s_addr & 0xFE0000)) {
-        return 1;
-    }
-    if ((iptr->ip_dst.s_addr & 0xFFFF) == 0xE0 && !(iptr->ip_dst.s_addr & 0xFE0000)) {
-        return 1;
-    }
-    // filter 255.255.255.255
-    if (iptr->ip_src.s_addr == 0xFFFFFFFF ||iptr->ip_dst.s_addr == 0xFFFFFFFF) {
-        return 1;
-    }
-    // filter 127.0.0.1
-    if (iptr->ip_src.s_addr == 0x100007F ||iptr->ip_dst.s_addr == 0x100007F) {
-        return 1;
-    }
-    //printf("%lu %lu\n", iptr->ip_src.s_addr, iptr->ip_dst.s_addr);
-    return 0;
-}
-
-
 static void handle_ip_packet(struct ip* iptr, int hw_dir)
 {
     int direction = 0; /* incoming */
@@ -393,6 +370,7 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
     } u_ht = { &ht };
     addr_pair ap;
     unsigned int len = 0;
+    time_t t;
     //struct in6_addr scribdst;   /* Scratch pad. */
     //struct in6_addr scribsrc;   /* Scratch pad. */
     /* Reinterpret packet type. */
@@ -400,7 +378,8 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
 
     memset(&ap, '\0', sizeof(ap));
 
-    tick(0);
+    t = time(NULL);
+    tick(0, t);
 
     /*----------- isshe 2017.05.27 -----------
      * we ignore the ip-v6 packet for now
@@ -408,17 +387,13 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
      */
     //if (IP_V(iptr) == 6) { return; }
 
-    // control_block_filter
-    if(options.control_block_filter && is_control_block_pkt(iptr)) { return; }
-
     // filter the packets which has the protocol type in the block_protocols list
-    // arguments are from the in '-z' option
-    if (options.num_of_block_protocols != 0 && iptr->ip_p) {
-        for (i = 0; i < options.num_of_block_protocols; i++) {
-            if (iptr->ip_p == options.block_protocols[i]) {
-                return;
-            }
+    // arguments are from the in '-Z' option
+    while (options.block_protocols[i] != -1) {
+        if (iptr->ip_p == options.block_protocols[i]) {
+            return;
         }
+        i++;
     }
 
     //if( (IP_V(iptr) ==4 && options.netfilter == 0)
@@ -485,7 +460,7 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
     }
 
     // if(IP_V(iptr) == 4 && options.netfilter != 0) {
-    if (options.netfilter != 0) {
+    else {
         /*
          * Net filter on, assign direction according to netmask
          */
@@ -501,36 +476,16 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
         }
         else {
             /* drop packet */
-            return ;
+            return;
         }
     }
 
     ap.protocol = iptr->ip_p;
-    /* Do address resolving. */
-    /*
-    switch (IP_V(iptr)) {
-      case 4:
-          ap.protocol = iptr->ip_p;
-          // Add the addresses to be resolved
-          // The IPv4 address is embedded in a in6_addr structure,
-          // so it need be copied, and delivered to resolve().
-          memset(&scribdst, '\0', sizeof(scribdst));
-          memcpy(&scribdst, &iptr->ip_dst, sizeof(struct in_addr));
-          resolve(ap.af, &scribdst, NULL, 0);
-          memset(&scribsrc, '\0', sizeof(scribsrc));
-          memcpy(&scribsrc, &iptr->ip_src, sizeof(struct in_addr));
-          resolve(ap.af, &scribsrc, NULL, 0);
-          break;
-      case 6:
-          ap.protocol = ip6tr->ip6_nxt;
-          // Add the addresses to be resolved
-          resolve(ap.af, &ip6tr->ip6_dst, NULL, 0);
-          resolve(ap.af, &ip6tr->ip6_src, NULL, 0);
-      default:
-          break;
-    }
-    */
-	//printf("src port = %d, dst port = %d\n", ap.src_port, ap.dst_port);
+
+    /* Do address resolving.
+     * has been removed
+     */
+
 
     /* isshe 2017.06.10
      * drop the pkt if the src ip address is 172.16.64.31 (router)
@@ -544,14 +499,13 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
      * ajust all Dynamic Ports number to the same number 'Zero'
      * port number range From 49152 to 65535
      */
-    if (ap.dst_port >= 49152 || ap.dst_port <= 65535) {
+    if (ap.dst_port >= 49152 && ap.dst_port <= 65535) {
         ap.dst_port = 0;
     }
-
 	/* isshe
      * drop the pkt if it in the port list
      */
-	if (in_port_list(port_list, PORT_LIST_LEN, ap.src_port)
+	else if (in_port_list(port_list, PORT_LIST_LEN, ap.src_port)
         || in_port_list(port_list, PORT_LIST_LEN, ap.dst_port)) {
         return;
     }
@@ -567,7 +521,8 @@ static void handle_ip_packet(struct ip* iptr, int hw_dir)
     /* Update record */
     //ht->last_write = history_pos;
     //--------------------------------------------
-    ht->last_update_time = time(NULL);
+    // ht->last_update_time = time(NULL);
+    ht->last_update_time = t;
     //printf("we have updated the record!\n");
     //--------------------------------------------
 
@@ -770,7 +725,7 @@ static void handle_eth_packet(unsigned char* args, const struct pcap_pkthdr* pkt
     const unsigned char *payload;
 
 
-	save_file(pkthdr, packet);
+	// save_file(pkthdr, packet);
 
     eptr = (struct ether_header*)packet; 				//Í·ï¿½ï¿½
     ether_type = ntohs(eptr->ether_type);
@@ -1035,8 +990,6 @@ int main(int argc, char **argv) {
 
     //ui_finish();
 
-    // isshe 2017.05.26 --------------
-    free(options.block_protocols);
     // isshe 2017.05.31
     // disconnect & destory MQTT
     destory_MQTT();
